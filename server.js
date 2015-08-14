@@ -12,6 +12,8 @@ console.log("server started");
 var connections = 0;
 var all_user = [];
 
+var start_time = getTime(); // reference time, when server did start
+
 //accept new incomming connections
 wss.on('connection', function(ws) {
   // create a new User
@@ -38,6 +40,7 @@ var User = function(ws, id, rank) {
 
   _ws.on('close', function() {
     console.log("closed this user" + id);
+    _this.disconnect();
   });
 
   _ws.on('message', function(message, flags) {
@@ -48,12 +51,16 @@ var User = function(ws, id, rank) {
       var obj = Structure.parse(message);
       obj.from = id;
       var ab = Structure.pack(obj, obj.type );
-      console.log("recv ", obj);
+      //console.log("recv ", obj);
       switch(obj.type) {
         case 0:  // not interested in welcome message
           break;
         case 1: // direction update -> broadcast
-          _broadcast(ab);
+          _broadcast(Structure.pack({
+            id: obj.id,
+            dir: obj.dir,
+            time: getTime() - start_time
+          }, 1));
           break;
 
       }
@@ -63,6 +70,17 @@ var User = function(ws, id, rank) {
     }
   });
 
+
+   // will remove current user (which has rank _rank) and update other ranks
+  this.disconnect = function() {
+
+    for(var i = _rank; i < all_user.length - 1; i++) {
+      all_user[i] = all_user[i + 1];
+      all_user[i].setRank(i);
+    }
+    all_user.pop(); // removed last user
+    console.log("remove", _id)
+  }
 
   //broadcast to anyone, but the sender
   var _broadcast = function (ab, exclude) {

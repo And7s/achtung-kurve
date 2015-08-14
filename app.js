@@ -1,4 +1,5 @@
 var App = {};
+var Field = {};
 
 App.canvas = document.getElementById('c');
 App.ctx = App.canvas.getContext('2d');
@@ -13,11 +14,23 @@ App.init = function() {
 };
 
 App.resize = function() {
-  App.width = $(window).width();
-  App.height = $(window).height();
+  var w = $(window).width(),
+      h = $(window).height();
 
-  App.canvas.width = App.width;
-  App.canvas.height = App.height;
+  App.width = w;
+  App.height = h;
+
+  Field.size = Math.min(w, h) - 10;
+
+  App.canvas.width = w;
+  App.canvas.height = h;
+  App.scale = Field.size / 960;  // everything gets scaled according to this
+
+  Field.canvas = document.createElement('canvas');
+  Field.ctx = Field.canvas.getContext('2d');
+
+  Field.ctx.width = Field.size;
+  Field.ctx.height = Field.size;
 };
 
 
@@ -27,7 +40,7 @@ App.render = function() {
 
   for(var i = 0; i < 256; i++) {
     if(Key.down(i)) {
-      console.log("down ", i);
+      //console.log("down ", i);
     }
   }
 
@@ -38,6 +51,8 @@ App.render = function() {
   }else {
     App.createEvent(0);
   }
+
+  App.ctx.drawImage(Field.canvas, 10, 10);
 };
 
 App.createEvent = function(dir) {
@@ -65,9 +80,10 @@ var Actor = function() {
   };
 
   this.draw = function() {
-    App.ctx.beginPath();
-    App.ctx.arc(x, y, 5, 0, 2*Math.PI);
-    App.ctx.fill();
+    Field.ctx.fillStyle="#FF0000";
+    Field.ctx.beginPath();
+    Field.ctx.arc(x, y, 5 * App.scale, 0, 2*Math.PI);
+    Field.ctx.fill();
   };
 
 };

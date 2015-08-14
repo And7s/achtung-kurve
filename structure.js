@@ -10,9 +10,10 @@ var PROT = [
   },
   // 1: who presses key in which direction
   {
-    size: 5,
+    size: 11,
     id: 'Uint32',
-    dir: 'Int8'
+    dir: 'Int8',
+    time: 'Uint32'
   }
 
 

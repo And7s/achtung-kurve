@@ -39,7 +39,7 @@ var Client = {
         console.log("recieve string ", e.data);
       }else { //binary
         var obj = Structure.parse(e.data);
-        console.log("recv ", obj)
+        //console.log("recv ", obj)
         switch(obj.type) {
           case 0:
             id = obj.id;
@@ -55,7 +55,7 @@ var Client = {
 
   sendDir: function(dir) {
     if(ws.readyState !== 1) return;
-    console.log("send");
+    //console.log("send");
     ws.send(Structure.pack({
       id: this.id,
       dir: dir
