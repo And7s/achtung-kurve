@@ -84,6 +84,15 @@ App.dispatchEvent = function(obj) {
   App.actors[obj.id].rotate(obj.dir, 1);
 };
 
+App.restartMatch = function() {
+  Field.ctx.clearRect(0, 0, Field.size, Field.size);  // clear context
+  setTimeout(function() {
+    for(var it in App.actors) { // awake all actors
+      App.actors[it].live();
+    }
+  }, 2000);
+};
+
 App.setActor = function(obj) {
   if(!App.actors[obj.id]) {
     console.log("create new actor");
@@ -121,10 +130,11 @@ var Actor = function() {
     rot = obj.rot;
 
     console.log("x "+x+" "+y+" rot: "+rot);
-    var that = this;
-    setTimeout(function() {
-      that.state = 1;
-    }, 2000);
+
+  };
+
+  this.live = function() {
+    state = 1;
   };
 
   // moves and checks for collision

@@ -37,23 +37,28 @@ var Client = {
       if(typeof(e.data) == "string") {
         console.log("recieve string ", e.data);
       }else { //binary
-        var obj = Structure.parse(e.data);
-        //console.log("recv ", obj)
-        switch(obj.type) {
-          case 0:
-            Client.id = obj.id;
-            App.state = obj.state;
-            break;
-          case 1:
-            App.dispatchEvent(obj);
-            break;
-          case 2:
-            //console.log(obj);
-            App.setActor(obj);
-            break;
-        }
+        Structure.parse(e.data, processMessage);
       }
     };
+
+    var processMessage = function(obj) {
+      console.log(obj);
+      switch(obj.type) {
+        case 0:
+          Client.id = obj.id;
+          App.state = obj.state;
+          break;
+        case 1:
+          App.dispatchEvent(obj);
+          break;
+        case 2:
+          App.setActor(obj);
+          break;
+        case 3:
+          App.restartMatch();
+          break;
+      }
+    }
   },
 
   sendDir: function(dir) {

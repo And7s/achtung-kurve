@@ -8,6 +8,7 @@ var Match = {
 
   restart: function() {
     console.log("will restart game");
+    var ab = Structure.pack({}, 3);
 
     for(var it in all_user) {
       this.actors[it] = {
@@ -16,12 +17,17 @@ var Match = {
         rot: Math.random() * 2 * Math.PI,
         id: all_user[it].getId()
       }
-      broadcast(Structure.pack(this.actors[it], 2));
+      console.log(ab);
+      console.log(ab.length);
+      ab = Structure.append(
+        ab,
+        Structure.pack(this.actors[it], 2)
+      );
     }
-    console.log(this.actors);
+
+    broadcast(ab);
+
   }
-
-
 };
 
 eval(fs.readFileSync('structure.js', 'utf8'));
@@ -76,28 +82,29 @@ var User = function(ws, id) {
     _last_msg = getTime();
     //process.stdout.write("m");
     if(flags.binary) {
-
-      var obj = Structure.parse(message);
-      obj.from = id;
-      var ab = Structure.pack(obj, obj.type );
-      //console.log("recv ", obj);
-      switch(obj.type) {
-        case 0:  // not interested in welcome message
-          break;
-        case 1: // direction update -> broadcast
-          broadcast(Structure.pack({
-            id: _id,
-            dir: obj.dir,
-            time: getTime() - start_time
-          }, 1));
-          break;
-
-      }
-
+      Structure.parse(message, processMessage);
     }else { //non binary message, possibly json?
       console.log(message);
     }
   });
+
+  var processMessage = function(obj) {
+    obj.from = id;
+    var ab = Structure.pack(obj, obj.type );
+    //console.log("recv ", obj);
+    switch(obj.type) {
+      case 0:  // not interested in welcome message
+        break;
+      case 1: // direction update -> broadcast
+        broadcast(Structure.pack({
+          id: _id,
+          dir: obj.dir,
+          time: getTime() - start_time
+        }, 1));
+        break;
+    }
+
+  };
 
 
    // will remove current user (which has rank _rank) and update other ranks

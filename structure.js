@@ -23,13 +23,18 @@ var PROT = [
     y: 'Float32',
     rot: 'Float32',
     id: 'Uint32'
+  },
+  // 3: single match will start flag
+  {
+    size: 0
   }
 
 
 ];
 
 var Structure = {
-  parse: function(ab) {
+  parse: function(ab, callback) {
+    console.log("call parse");
 
     if (ab instanceof ArrayBuffer) {
       //is already array buffer
@@ -40,49 +45,63 @@ var Structure = {
 
     var dv = new DataView(ab);
 
-    var type = dv.getUint8(0, true);
-    if(type < 0 || type >= PROT.length) {
-      console.log("unsupported type ", type);
-      return;
-    }
-    var prot = PROT[type];
-    var obj = {type: type};
-    var ind = 1;
-    for(var key in prot) {  //no prototype assigned
-      if(key == 'size') continue;
-      var val;
-      switch(prot[key]) {
-        case 'Uint8':
-          val = dv.getUint8(ind++, true);
-          break;
-        case 'Int8':
-          val = dv.getInt8(ind++, true);
-          break;
-        case 'Uint32':
-          val = dv.getUint32(ind, true);
-          ind += 4;
-          break;
-        case 'Float32':
-          val = dv.getFloat32(ind, true);
-          ind += 4;
-          break;
-        case 'Str10':   //10 character in 2 bytes each
-          var val = "";
-          for(var i = 0; i < 10; i++) {
-            var code = dv.getUint16(ind);
-            ind += 2;
-            if(code != 0) {
-              val += String.fromCharCode(code);
-            }
-          }
-          break;
-        default:
-          console.log("unsupported data type");
+    var length = ab.byteLength;
+
+    var ind = 0;
+    while(ind < length) { // support for multiple messages per package
+      var type = dv.getUint8(ind++, true);
+      if(type < 0 || type >= PROT.length) {
+        console.log("unsupported type ", type);
+        return;
       }
-      obj[key] = val;
+
+      console.log("got msg", type);
+      var prot = PROT[type];
+      var obj = {type: type};
+
+      for(var key in prot) {  //no prototype assigned
+        if(key == 'size') continue;
+        var val;
+        switch(prot[key]) {
+          case 'Uint8':
+            val = dv.getUint8(ind++, true);
+            break;
+          case 'Int8':
+            val = dv.getInt8(ind++, true);
+            break;
+          case 'Uint32':
+            val = dv.getUint32(ind, true);
+            ind += 4;
+            break;
+          case 'Float32':
+            val = dv.getFloat32(ind, true);
+            ind += 4;
+            break;
+          case 'Str10':   //10 character in 2 bytes each
+            var val = "";
+            for(var i = 0; i < 10; i++) {
+              var code = dv.getUint16(ind);
+              ind += 2;
+              if(code != 0) {
+                val += String.fromCharCode(code);
+              }
+            }
+            break;
+          default:
+            console.log("unsupported data type");
+        }
+        obj[key] = val;
+      }
+      callback(obj);
     }
-    return obj;
   },
+
+  // concatenate two array buffers
+  append: function(a, b) {
+    // only supported on the server side
+    return Buffer.concat([a,b]);
+  },
+
 
   pack: function(obj, type) {
     if(type < 0 || type >= PROT.length) {
