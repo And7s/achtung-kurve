@@ -8,6 +8,8 @@ var Match = {
 
   restart: function() {
     console.log("will restart game");
+    start_time = getTime(); // match is relative to this time
+
     var ab = Structure.pack({}, 3);
 
     for(var it in all_user) {
@@ -15,10 +17,11 @@ var Match = {
         x: Math.random(),
         y: Math.random(),
         rot: Math.random() * 2 * Math.PI,
-        id: all_user[it].getId()
+        id: all_user[it].getId(),
+        gap: 0,
+        next_gap: 0
       }
-      console.log(ab);
-      console.log(ab.length);
+
       ab = Structure.append(
         ab,
         Structure.pack(this.actors[it], 2)
@@ -96,10 +99,25 @@ var User = function(ws, id) {
       case 0:  // not interested in welcome message
         break;
       case 1: // direction update -> broadcast
+        var now = getTime() - start_time;
+        var gap = all_user[_id].gap;
+
+        var that = Match.actors[_id];
+        if(that.gap <= now && that.gap != 0) { // gap changed to over
+          that.gap = 0;
+          that.next_gap = now + 500 + Math.random() * 1500;
+        }
+        if(that.gap == 0 && that.next_gap <= now) { // gap changed to active
+          that.gap = now + Math.random() * 400 + 100;
+        }
+        console.log("gap: "+that.gap+" next "+that.next_gap+"now "+now);
+
         broadcast(Structure.pack({
           id: _id,
           dir: obj.dir,
-          time: getTime() - start_time
+          time: now,
+          gap: that.gap,
+          next_gap: that.next_gap
         }, 1));
         break;
     }

@@ -46,6 +46,7 @@ App.resize = function() {
 
 
 App.render = function() {
+
   for(var it in App.actors) {
     App.actors[it].update(1);
   }
@@ -69,10 +70,29 @@ App.render = function() {
   App.ctx.clearRect(Field.offset_x, Field.offset_y, Field.size, Field.size);
 
   // draw the border
+  App.ctx.beginPath();
   App.ctx.strokeStyle="#FFFFFF";
   App.ctx.rect(Field.offset_x, Field.offset_y, Field.size, Field.size);
   App.ctx.stroke();
+  App.ctx.closePath();
   App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
+
+  // draw head
+  for(var it in App.actors) {
+    App.ctx.fillStyle="#FFFFFF";
+    App.ctx.beginPath();
+    App.ctx.arc(
+      App.actors[it].getX() * Field.size + Field.offset_x,
+      App.actors[it].getY() * Field.size + Field.offset_y,
+      3 * App.scale,
+      0,
+      2 * Math.PI
+    );
+    App.ctx.fill();
+    App.ctx.closePath();
+  }
+
+
   window.requestAnimationFrame(App.render);
 };
 
@@ -81,11 +101,16 @@ App.createEvent = function(dir) {
 }
 
 App.dispatchEvent = function(obj) {
+  App.time = obj.time;
   App.actors[obj.id].rotate(obj.dir, 1);
+  App.actors[obj.id].gap = obj.gap;
+  App.actors[obj.id].next_gap = obj.next_gap;
 };
 
 App.restartMatch = function() {
   Field.ctx.clearRect(0, 0, Field.size, Field.size);  // clear context
+  App.actors = {};
+
   setTimeout(function() {
     for(var it in App.actors) { // awake all actors
       App.actors[it].live();
@@ -110,6 +135,9 @@ var Actor = function() {
       size = 2,
       state = 2;  // 0: waiting (before game start), 1: playing, 2: dead
 
+  this.gap = 0,
+  this.next_gap = 0;
+
   this.update = function(dt) {
     if(state == 2) return; // you are dead
     this.move(dt /2);
@@ -117,6 +145,15 @@ var Actor = function() {
     this.move(dt /2);
     this.draw();
   };
+
+  this.getX = function() {
+    return x;
+  };
+
+  this.getY = function() {
+    return y;
+  };
+
 
   this.die = function() {
     state = 2;
@@ -165,7 +202,10 @@ var Actor = function() {
         }
       }
       // set the mask, where someone has been
-      App.mask[Math.round(sy) * App.maskRes + Math.round(sx)] = 1;
+      // if there is no gapp currently
+      if(this.gap == 0 || this.gap < App.time) {
+        App.mask[Math.round(sy) * App.maskRes + Math.round(sx)] = 1;
+      }
     }
 
     x += dx;
@@ -183,14 +223,23 @@ var Actor = function() {
   };
 
   this.draw = function() {
-    Field.ctx.fillStyle="#FF0000";
-    Field.ctx.beginPath();
-    Field.ctx.arc(x * Field.size, y * Field.size, size * App.scale, 0, 2 * Math.PI);
-    Field.ctx.fill();
+    console.log(this.gap+" "+this.next_gap+" "+App.time);
+    if(this.gap > 0 && this.gap > App.time) {
+      console.log("there is a gap")
+
+    }else {
+      Field.ctx.fillStyle="#FF0000";
+      Field.ctx.beginPath();
+      Field.ctx.arc(x * Field.size, y * Field.size, size * App.scale, 0, 2 * Math.PI);
+      Field.ctx.fill();
+    }
   };
 
 };
 
+var getTime = function() {
+  return new Date().getTime();
+}
 
 
 $(App.init);

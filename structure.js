@@ -10,11 +10,12 @@ var PROT = [
   },
   // 1: who presses key in which direction
   {
-    size: 13,
+    size: 17,
     id: 'Uint32',
     dir: 'Int8',
     time: 'Uint32',
-    gap: 'Uint32'
+    gap: 'Uint32',
+    next_gap: 'Uint32'
   },
   // 2: start position of a actor
   {
@@ -24,7 +25,7 @@ var PROT = [
     rot: 'Float32',
     id: 'Uint32'
   },
-  // 3: single match will start flag
+  // 3: single "match will start" flag
   {
     size: 0
   }
@@ -34,8 +35,6 @@ var PROT = [
 
 var Structure = {
   parse: function(ab, callback) {
-    console.log("call parse");
-
     if (ab instanceof ArrayBuffer) {
       //is already array buffer
 
@@ -55,7 +54,6 @@ var Structure = {
         return;
       }
 
-      console.log("got msg", type);
       var prot = PROT[type];
       var obj = {type: type};
 

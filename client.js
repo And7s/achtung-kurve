@@ -42,7 +42,7 @@ var Client = {
     };
 
     var processMessage = function(obj) {
-      console.log(obj);
+
       switch(obj.type) {
         case 0:
           Client.id = obj.id;
