@@ -3,7 +3,7 @@ var Field = {};
 
 App.canvas = document.getElementById('c');
 App.ctx = App.canvas.getContext('2d');
-
+App.actors = {};
 
 App.init = function() {
   App.maskRes = 500;
@@ -46,7 +46,9 @@ App.resize = function() {
 
 
 App.render = function() {
-  Actors[0].update(1);
+  for(var it in App.actors) {
+    App.actors[it].update(1);
+  }
 
 
   for(var i = 0; i < 256; i++) {
@@ -79,31 +81,48 @@ App.createEvent = function(dir) {
 }
 
 App.dispatchEvent = function(obj) {
+  console.log(obj);
   // todo recv from server
-  Actors[obj.id].rotate(obj.dir, 1);
-}
+  App.actors[obj.id].rotate(obj.dir, 1);
+};
+
+App.setActor = function(obj) {
+  if(!App.actors[obj.id]) {
+    console.log("create new actor");
+    App.actors[obj.id] = new Actor();
+  }
+  App.actors[obj.id].respawn(obj);
+
+};
 
 var Actor = function() {
   var x = 0.5,
       y = 0.5,
       speed = 0.005,
       rot = 0,
-      size = 2;
+      size = 2,
+      state = 2;  // 0: waiting (before game start), 1: playing, 2: dead
 
   this.update = function(dt) {
-    this.move(dt /4);
+    if(state == 2) return; // you are dead
+    this.move(dt /2);
     this.draw();
-    this.move(dt /4);
+    this.move(dt /2);
     this.draw();
-
   };
 
-  this.collide = function() {
-    var imgd = Field.getImageData(x, y, width, height);
-    var pix = imgd.data;
-
+  this.die = function() {
+    state = 2;
   };
 
+  this.respawn = function(obj) {
+    state = 0;
+    x = obj.x;
+    y = obj.y;
+    rot = obj.rot;
+  };
+
+  // moves and checks for collision
   this.move = function(dt) {
     var dx = Math.cos(rot) * speed * dt,
         dy = Math.sin(rot) * speed * dt;
@@ -123,10 +142,10 @@ var Actor = function() {
         // add 1.5 more, so it wont get round in the wrong direction twice(negelcted)
          var cx =  Math.cos(rot + i) * (size + 1.5) + (x + dx) * App.maskRes ,
              cy =  Math.sin(rot + i) * (size + 1.5) + (y + dy) * App.maskRes ;
-             console.log("check "+cx+" "+cy);
+        // console.log("check "+cx+" "+cy);
         if(App.mask[Math.round(cy) * App.maskRes + Math.round(cx)] == 1) {
           console.log("collide");
-          debugger;
+          this.die();
         }
       }
       // set the mask, where someone has been
@@ -135,6 +154,12 @@ var Actor = function() {
 
     x += dx;
     y += dy;
+
+    // collision check at borders
+    if(x <= 0 || x >= 1 || y <= 0 || y >= 1) {
+      console.log("border dead");
+      this.die();
+    }
   }
 
   this.rotate = function(dir, dt) {
@@ -150,9 +175,6 @@ var Actor = function() {
 
 };
 
-var Actors = [
-  new Actor()
-];
 
 
 $(App.init);

@@ -4,16 +4,25 @@
 var PROT = [
   // 0: who am I
   {
-   size: 8,
+   size: 5,
    id: 'Uint32',
-   rank: 'Uint32'
+   state: 'Uint8'
   },
   // 1: who presses key in which direction
   {
-    size: 11,
+    size: 13,
     id: 'Uint32',
     dir: 'Int8',
-    time: 'Uint32'
+    time: 'Uint32',
+    gap: 'Uint32'
+  },
+  // 2: start position of a actor
+  {
+    size: 16,
+    x: 'Float32',
+    y: 'Float32',
+    rot: 'Float32',
+    id: 'Uint32'
   }
 
 

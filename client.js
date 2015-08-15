@@ -8,7 +8,6 @@ var Client = {
   active: false,
   timeout: null,
   id: null,
-  rank: null,
 
   initialize: function() {
 
@@ -42,11 +41,14 @@ var Client = {
         //console.log("recv ", obj)
         switch(obj.type) {
           case 0:
-            id = obj.id;
-            rank = obj.rank;
+            Client.id = obj.id;
+            App.state = obj.state;
           break;
           case 1:
             App.dispatchEvent(obj);
+          case 2:
+            console.log(obj);
+            App.setActor(obj);
           break;
         }
       }

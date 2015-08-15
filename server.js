@@ -1,7 +1,28 @@
 //websocket server
 var fs = require('fs');
 
-var Match = {};
+var Match = {
+  state: 0,  // 0: waiting, 1: playing
+  actors: {},
+  history: [],
+
+  restart: function() {
+    console.log("will restart game");
+
+    for(var it in all_user) {
+      this.actors[it] = {
+        x: Math.random(),
+        y: Math.random(),
+        rot: Math.random() * 2 * Math.PI,
+        id: all_user[it].getId()
+      }
+      broadcast(Structure.pack(this.actors[it], 2));
+    }
+    console.log(this.actors);
+  }
+
+
+};
 
 eval(fs.readFileSync('structure.js', 'utf8'));
 var WebSocketServer = require('ws').Server;
@@ -10,28 +31,36 @@ var wss = new WebSocketServer({port: 8080});
 console.log("server started");
 
 var connections = 0;
-var all_user = [];
+var all_user = {};
 
 var start_time = getTime(); // reference time, when server did start
 
 //accept new incomming connections
 wss.on('connection', function(ws) {
   // create a new User
-  var user = new User(ws, connections, all_user.length);
+  var user = new User(ws, connections);
+  all_user[connections] = user;
   connections++;
-  all_user.push(user);
   // now hes part of all users, inform others
   //user.distributeUserData();
-
+  Match.restart();
 });
 
 
-var User = function(ws, id, rank) {
-  console.log("create new user id: "+id+" rank: "+rank);
+//broadcast to anyone, but the sender
+var broadcast = function (ab, exclude) {
+  for(var it in all_user) {
+    if(all_user[it].getId() == exclude) continue;
+    all_user[it].send(ab);
+  }
+};
+
+
+var User = function(ws, id) {
+  console.log("create new user id: "+id);
   // construct the user
   var _last_msg = getTime();
   var _ws = ws;
-  var _rank = rank;
   var _id = id;
   var _this = this;
   var _name = "noName_"+id;
@@ -56,7 +85,7 @@ var User = function(ws, id, rank) {
         case 0:  // not interested in welcome message
           break;
         case 1: // direction update -> broadcast
-          _broadcast(Structure.pack({
+          broadcast(Structure.pack({
             id: obj.id,
             dir: obj.dir,
             time: getTime() - start_time
@@ -73,23 +102,12 @@ var User = function(ws, id, rank) {
 
    // will remove current user (which has rank _rank) and update other ranks
   this.disconnect = function() {
-
-    for(var i = _rank; i < all_user.length - 1; i++) {
-      all_user[i] = all_user[i + 1];
-      all_user[i].setRank(i);
-    }
-    all_user.pop(); // removed last user
-    console.log("remove", _id)
-  }
-
-  //broadcast to anyone, but the sender
-  var _broadcast = function (ab, exclude) {
-    for(var i = 0; i < all_user.length; i++) {
-      if(i === exclude) continue;
-      all_user[i].send(ab);
-    }
+    delete all_user[_id];
   };
 
+  this.getId = function() {
+    return _id;
+  };
 
   this.send = function(obj) {
     //console.log("try send to "+_id);
@@ -104,7 +122,7 @@ var User = function(ws, id, rank) {
   // welcome the user
   this.send(Structure.pack({
     id: _id,
-    rank: _rank
+    state: Match.state
   }, 0));
 
 
