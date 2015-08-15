@@ -5,14 +5,16 @@ App.canvas = document.getElementById('c');
 App.ctx = App.canvas.getContext('2d');
 App.actors = {};
 
-App.init = function() {
+App.init = function(images) {
+  console.log(images);
   App.maskRes = 500;
+  App.state = 0;  // 0: dead, 1: awaking, 2: playing
   App.resize();
   Key = new Key();
   Client.initialize();
+  App.img = images[0];
 
   App.mask = new Uint8Array(App.maskRes * App.maskRes);
-  //window.setInterval(App.render, 32);
   window.requestAnimationFrame(App.render);
 
 };
@@ -37,11 +39,6 @@ App.resize = function() {
 
   Field.offset_x = 10,
   Field.offset_y = (h - Field.size) / 2;
-
-  //Field.ctx.width = Field.size;
-  //Field.ctx.height = Field.size;
-
-  //Field.ctx.globalCompositeOperation = 'destination-atop';
 };
 
 
@@ -69,22 +66,38 @@ App.render = function() {
   // clear
   App.ctx.clearRect(Field.offset_x, Field.offset_y, Field.size, Field.size);
 
+  // time
+  if(App.time) {
+    var t = Math.round((App.time - 2000) / 100) / 10;
+    t = t.toFixed(1);
+    text(t, 50, 80, 50, '#fff');
+  }
+
+
+  Pickups.draw();
+
+
   // draw the border
   App.ctx.beginPath();
-  App.ctx.strokeStyle="#FFFFFF";
+  App.ctx.strokeStyle = "#FFFFFF";
   App.ctx.rect(Field.offset_x, Field.offset_y, Field.size, Field.size);
   App.ctx.stroke();
   App.ctx.closePath();
   App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
 
   // draw head
+  var size = 3;
+  if(App.state == 1) {
+    size += Math.sin(App.time / 100) * 2 + 1;
+  }
+
   for(var it in App.actors) {
     App.ctx.fillStyle="#FFFFFF";
     App.ctx.beginPath();
     App.ctx.arc(
       App.actors[it].getX() * Field.size + Field.offset_x,
       App.actors[it].getY() * Field.size + Field.offset_y,
-      3 * App.scale,
+      size * App.scale,
       0,
       2 * Math.PI
     );
@@ -93,11 +106,14 @@ App.render = function() {
   }
 
 
-  window.requestAnimationFrame(App.render);
+
+  //window.requestAnimationFrame(App.render);
+  setTimeout(App.render, 32)
 };
 
 App.createEvent = function(dir) {
-  Client.sendDir(dir)
+  if(App.state == 2)
+    Client.sendDir(dir)
 }
 
 App.dispatchEvent = function(obj) {
@@ -110,8 +126,16 @@ App.dispatchEvent = function(obj) {
 App.restartMatch = function() {
   Field.ctx.clearRect(0, 0, Field.size, Field.size);  // clear context
   App.actors = {};
+  App.state = 1;
+
+  // reset mask
+  var L = App.maskRes * App.maskRes;
+  for(var i = 0; i < L; i++) {
+    App.mask[i] = 0;
+  }
 
   setTimeout(function() {
+    App.state = 2;
     for(var it in App.actors) { // awake all actors
       App.actors[it].live();
     }
@@ -121,19 +145,20 @@ App.restartMatch = function() {
 App.setActor = function(obj) {
   if(!App.actors[obj.id]) {
     console.log("create new actor");
-    App.actors[obj.id] = new Actor();
+    App.actors[obj.id] = new Actor(obj.id);
   }
   App.actors[obj.id].respawn(obj);
 
 };
 
-var Actor = function() {
+var Actor = function(id) {
   var x = 0.5,
       y = 0.5,
-      speed = 0.005,
+      speed = 0.001,
       rot = 0,
       size = 2,
       state = 2;  // 0: waiting (before game start), 1: playing, 2: dead
+
 
   this.gap = 0,
   this.next_gap = 0;
@@ -165,13 +190,11 @@ var Actor = function() {
     x = obj.x;
     y = obj.y;
     rot = obj.rot;
-
-    console.log("x "+x+" "+y+" rot: "+rot);
-
   };
 
   this.live = function() {
     state = 1;
+    speed = 0.005;
   };
 
   // moves and checks for collision
@@ -223,12 +246,10 @@ var Actor = function() {
   };
 
   this.draw = function() {
-    console.log(this.gap+" "+this.next_gap+" "+App.time);
     if(this.gap > 0 && this.gap > App.time) {
-      console.log("there is a gap")
 
     }else {
-      Field.ctx.fillStyle="#FF0000";
+      Field.ctx.fillStyle = COLORS[id % COLORS.length];
       Field.ctx.beginPath();
       Field.ctx.arc(x * Field.size, y * Field.size, size * App.scale, 0, 2 * Math.PI);
       Field.ctx.fill();
@@ -237,9 +258,88 @@ var Actor = function() {
 
 };
 
+
+
+var Pickups = {
+  arr: [],
+
+  collide: function(x,y) {
+
+  },
+
+  draw: function() {
+    for(var i = 0; i < this.arr.length; i++) {
+      App.ctx.drawImage(
+        App.img,
+        this.arr[i].type * 39,
+        0,
+        39,
+        39,
+        this.arr[i].x * Field.size - 20 * App.scale / 1.5,
+        this.arr[i].y * Field.size - 20 * App.scale / 1.5,
+        39 * App.scale / 1.5,
+        39 * App.scale / 1.5
+      );
+    }
+  },
+
+  add: function(type, x, y) {
+    this.arr.push({
+      x: x,
+      y: y,
+      type: type
+    });
+  }
+};
+
+Pickups.add(0, 0.5, 0.5);
+
+
+var COLORS = [
+  '#f00',
+  '#0f0',
+  '#00f',
+  '#ff0',
+  '#0ff',
+  'fff'
+];
+
+function text(text, x,y, size, color) {
+
+  size = size || 16;
+  color = color || '#AAA';
+  App.ctx.fillStyle = color;
+  //ctx.font = 'thin 16px Arial serif';
+  App.ctx.font = '400 '+size+"px Open Sans";
+  App.ctx.textBaseline = 'bottom';
+  App.ctx.fillText(text, x, y);
+
+}
+
+
+
 var getTime = function() {
   return new Date().getTime();
 }
 
+function loadImages(sources, callback) {
+  var images = {};
+  var loadedImages = 0;
+  var numImages = 0;
+  // get num of sources
+  for(var src in sources) {
+    numImages++;
+  }
+  for(var src in sources) {
+    images[src] = new Image();
+    images[src].onload = function() {
 
-$(App.init);
+      if(++loadedImages >= numImages) {
+        callback(images);
+      }
+    };
+    images[src].src = sources[src];
+  }
+}
+
+$(loadImages(['power.png'], App.init));

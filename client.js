@@ -55,6 +55,7 @@ var Client = {
           App.setActor(obj);
           break;
         case 3:
+          App.time = obj.time;
           App.restartMatch();
           break;
       }

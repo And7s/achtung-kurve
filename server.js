@@ -10,16 +10,29 @@ var Match = {
     console.log("will restart game");
     start_time = getTime(); // match is relative to this time
 
-    var ab = Structure.pack({}, 3);
+    var ab = Structure.pack({
+      time: 0
+    }, 3);
+
 
     for(var it in all_user) {
+      var x = Math.random() - 0.5;
+      var y = Math.random() - 0.5;
+
+      var angle = Math.atan(y / x);
+      if(x < 0 ) {
+        angle = Math.PI + angle;
+      }
+      angle += Math.PI; // direct angle TO the center
+      angle += Math.random() * Math.PI / 2 - Math.PI / 4;   // max. 45^jitter
+
       this.actors[it] = {
-        x: Math.random(),
-        y: Math.random(),
-        rot: Math.random() * 2 * Math.PI,
+        x: x + 0.5,
+        y: y + 0.5,
+        rot: angle,
         id: all_user[it].getId(),
         gap: 0,
-        next_gap: 0
+        next_gap: Math.random() * 2000,
       }
 
       ab = Structure.append(
@@ -100,7 +113,6 @@ var User = function(ws, id) {
         break;
       case 1: // direction update -> broadcast
         var now = getTime() - start_time;
-        var gap = all_user[_id].gap;
 
         var that = Match.actors[_id];
         if(that.gap <= now && that.gap != 0) { // gap changed to over
@@ -110,7 +122,6 @@ var User = function(ws, id) {
         if(that.gap == 0 && that.next_gap <= now) { // gap changed to active
           that.gap = now + Math.random() * 400 + 100;
         }
-        console.log("gap: "+that.gap+" next "+that.next_gap+"now "+now);
 
         broadcast(Structure.pack({
           id: _id,

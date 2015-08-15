@@ -27,7 +27,8 @@ var PROT = [
   },
   // 3: single "match will start" flag
   {
-    size: 0
+    size: 4,
+    time: 'Uint32'
   }
 
 
