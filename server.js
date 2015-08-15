@@ -30,7 +30,7 @@ var WebSocketServer = require('ws').Server;
 var wss = new WebSocketServer({port: 8080});
 console.log("server started");
 
-var connections = 0;
+var connections = 1;
 var all_user = {};
 
 var start_time = getTime(); // reference time, when server did start
@@ -86,7 +86,7 @@ var User = function(ws, id) {
           break;
         case 1: // direction update -> broadcast
           broadcast(Structure.pack({
-            id: obj.id,
+            id: _id,
             dir: obj.dir,
             time: getTime() - start_time
           }, 1));

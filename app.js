@@ -81,8 +81,6 @@ App.createEvent = function(dir) {
 }
 
 App.dispatchEvent = function(obj) {
-  console.log(obj);
-  // todo recv from server
   App.actors[obj.id].rotate(obj.dir, 1);
 };
 
@@ -116,14 +114,22 @@ var Actor = function() {
   };
 
   this.respawn = function(obj) {
+    console.log(obj);
     state = 0;
     x = obj.x;
     y = obj.y;
     rot = obj.rot;
+
+    console.log("x "+x+" "+y+" rot: "+rot);
+    var that = this;
+    setTimeout(function() {
+      that.state = 1;
+    }, 2000);
   };
 
   // moves and checks for collision
   this.move = function(dt) {
+
     var dx = Math.cos(rot) * speed * dt,
         dy = Math.sin(rot) * speed * dt;
 

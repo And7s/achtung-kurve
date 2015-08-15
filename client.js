@@ -43,13 +43,14 @@ var Client = {
           case 0:
             Client.id = obj.id;
             App.state = obj.state;
-          break;
+            break;
           case 1:
             App.dispatchEvent(obj);
+            break;
           case 2:
-            console.log(obj);
+            //console.log(obj);
             App.setActor(obj);
-          break;
+            break;
         }
       }
     };

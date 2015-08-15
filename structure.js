@@ -111,7 +111,7 @@ var Structure = {
           ind += 4;
           break;
         case 'Float32':
-          dv.setFloat32(ind, obj[key]);
+          dv.setFloat32(ind, obj[key], true);
           ind += 4;
           break;
         case 'Str10':
