@@ -56,13 +56,10 @@ App.render = function() {
 
   // no pause
   if(App.state != 0) {
-    for(var it in App.actors) {
-      App.actors[it].update(1);
-    }
 
-    if(Key.down(39) || Key.down(65)) {
+    if(Key.down(39) || Key.down(68)) {
       App.createEvent(1);
-    }else if(Key.down(37) || Key.down(68)) {
+    }else if(Key.down(37) || Key.down(65)) {
       App.createEvent(-1);
     }else {
       App.createEvent(0);
@@ -120,8 +117,8 @@ App.render = function() {
 
   App.drawHighScore();
 
-  //window.requestAnimationFrame(App.render);
-  setTimeout(App.render, 32)
+  window.requestAnimationFrame(App.render);
+  //setTimeout(App.render, 32)
 };
 
 App.createEvent = function(dir) {
@@ -133,10 +130,32 @@ App.createEvent = function(dir) {
 }
 
 App.dispatchEvent = function(obj) {
+  var delta = obj.time - App.time;
+  //console.log("delta t", delta);
   App.time = obj.time;
-  App.actors[obj.id].rotate(obj.dir, 1);
-  App.actors[obj.id].gap = obj.gap;
-  App.actors[obj.id].next_gap = obj.next_gap;
+  if(delta == 0) {
+    console.log("nothing to apply");
+    return;
+  }
+
+
+
+  // apply what happened in the past in 10ms intervals
+  var num = Math.floor(delta / 10);
+  for(var i = 0; i < num; i++) {
+    var delta_ref = delta / num / 32;   // reference time relative to 32ms
+
+    App.actors[obj.id].rotate(obj.dir, delta_ref);
+    App.actors[obj.id].gap = obj.gap;
+    App.actors[obj.id].next_gap = obj.next_gap;
+
+    for(var it in App.actors) {
+      App.actors[it].update(delta_ref);
+    }
+  }
+
+
+
 };
 
 App.restartMatch = function() {

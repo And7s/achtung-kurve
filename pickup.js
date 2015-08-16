@@ -27,8 +27,8 @@ var Pickups = {
         0,
         39,
         39,
-        this.arr[i].x * Field.size - 20 * App.scale * this.size,
-        this.arr[i].y * Field.size - 20 * App.scale * this.size,
+        this.arr[i].x * Field.size - 20 * App.scale * this.size + Field.offset_x,
+        this.arr[i].y * Field.size - 20 * App.scale * this.size + Field.offset_y,
         39 * App.scale * this.size,
         39 * App.scale * this.size
       );

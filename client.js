@@ -1,9 +1,9 @@
 
 
 var ws;
-//var HOST = '192.168.2.100';
+var HOST = '192.168.2.100';
 //var HOST = 'localhost';
-var HOST = '212.227.97.146';
+//var HOST = '212.227.97.146';
 var PORT = 8080;
 
 var Client = {
@@ -86,7 +86,8 @@ var Client = {
 
     ws.send(Structure.pack({
       id: this.id,
-      dir: dir
+      dir: dir,
+      time: App.time
     }, 1));
   },
 

@@ -11,6 +11,7 @@ var Match = {
     console.log("will restart game");
     start_time = getTime(); // match is relative to this time
     Match.state = 1;  // awakening
+    Match.history = [];
 
     var ab = Structure.pack({
       time: 0
@@ -129,13 +130,30 @@ var User = function(ws, id) {
           that.gap = now + Math.random() * 600 + 100;
         }
         if(Match.state != 0) {
-          broadcast(Structure.pack({
-            id: _id,
-            dir: obj.dir,
-            time: now,
-            gap: that.gap,
-            next_gap: that.next_gap
-          }, 1));
+          console.log("get state at time "+ obj.time + "server time "+now+" delay "+ (now - obj.time));
+          var till_time = obj.time;
+          obj.time = now; // update time
+          obj.id = _id;
+
+          Match.history.push(obj); // add to history
+
+          // collect events till this time point, go back in time
+          var ab = new Buffer(0);
+          for(var i = Match.history.length - 1; i >= 0; i--) {
+            if(Match.history[i].time >= till_time ) {
+              // this was the last message (dont have to send again)
+              if(Match.history[i].time == till_time && Match.history[i].id == _id) break;
+              ab = Structure.append(Structure.pack(Match.history[i], 1), ab);
+            }else {
+              console.log("no more events");
+              break;
+            }
+          }
+
+          console.log("match history length", Match.history.length);
+
+          _this.send(ab);
+
         }
         break;
       case 5:

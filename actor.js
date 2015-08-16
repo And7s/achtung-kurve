@@ -144,7 +144,7 @@ var Actor = function(id) {
 
   this.rotate = function(dir, dt) {
     if(invert) dir = -dir;
-    rot += dir * dt * 0.05;
+    rot += dir * dt * 0.09;
   };
 
   this.draw = function() {
