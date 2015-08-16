@@ -10,6 +10,7 @@ var Match = {
   restart: function() {
     console.log("will restart game");
     start_time = getTime(); // match is relative to this time
+    Match.state = 1;  // awakening
 
     var ab = Structure.pack({
       time: 0
@@ -44,6 +45,10 @@ var Match = {
     }
 
     broadcast(ab);
+
+    setTimeout(function() {
+      Match.state = 2;
+    }, 2000);
 
   }
 };
@@ -123,14 +128,15 @@ var User = function(ws, id) {
         if(that.gap == 0 && that.next_gap <= now) { // gap changed to active
           that.gap = now + Math.random() * 600 + 100;
         }
-
-        broadcast(Structure.pack({
-          id: _id,
-          dir: obj.dir,
-          time: now,
-          gap: that.gap,
-          next_gap: that.next_gap
-        }, 1));
+        if(Match.state != 0) {
+          broadcast(Structure.pack({
+            id: _id,
+            dir: obj.dir,
+            time: now,
+            gap: that.gap,
+            next_gap: that.next_gap
+          }, 1));
+        }
         break;
       case 5:
         broadcast(Structure.pack({
@@ -138,11 +144,23 @@ var User = function(ws, id) {
           num: obj.num
         }, 5));
       break;
+      case 6:
+        if(obj.id != Math.pow(2,32) - 1) {  // give someone a score
+          console.log(obj.id);
+          broadcast(Structure.pack({
+            id: _id
+          }, 6));
+        }
+        Match.state = 0;  // pause
+        setTimeout(function() {
+          Match.restart();
+        }, 5000);
+      break;
     }
 
 
     // general check
-    if(Match.next_pickup < now) {
+    if(Match.next_pickup < now && Match.state != 0) {
       console.log("new pickup");
       broadcast(Structure.pack({
         x: Math.random(),

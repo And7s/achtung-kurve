@@ -4,11 +4,13 @@ var Field = {};
 App.canvas = document.getElementById('c');
 App.ctx = App.canvas.getContext('2d');
 App.actors = {};
+App.scores = {};
 
 App.init = function(images) {
   console.log(images);
   App.maskRes = 500;
-  App.state = 0;  // 0: dead, 1: awaking, 2: playing
+  App.state = 0;  // 0: before game, 1: awaking, 2: playing
+  App.last_win = -1;
   App.resize();
   Key = new Key();
   Client.initialize();
@@ -44,10 +46,6 @@ App.resize = function() {
 
 App.render = function() {
 
-  for(var it in App.actors) {
-    App.actors[it].update(1);
-  }
-
 
   for(var i = 0; i < 256; i++) {
     if(Key.down(i)) {
@@ -55,12 +53,19 @@ App.render = function() {
     }
   }
 
-  if(Key.down(39)) {
-    App.createEvent(1);
-  }else if(Key.down(37)) {
-    App.createEvent(-1);
-  }else {
-    App.createEvent(0);
+  // no pause
+  if(App.state != 0) {
+    for(var it in App.actors) {
+      App.actors[it].update(1);
+    }
+
+    if(Key.down(39)) {
+      App.createEvent(1);
+    }else if(Key.down(37)) {
+      App.createEvent(-1);
+    }else {
+      App.createEvent(0);
+    }
   }
 
   // clear
@@ -85,7 +90,6 @@ App.render = function() {
   }else {
     App.ctx.strokeStyle = "#F00";
   }
-
 
 
   App.ctx.rect(2.5, 2.5, Field.size+5 , Field.size+5 );
@@ -113,7 +117,7 @@ App.render = function() {
     App.ctx.closePath();
   }
 
-
+  App.drawHighScore();
 
   //window.requestAnimationFrame(App.render);
   setTimeout(App.render, 32)
@@ -139,6 +143,7 @@ App.restartMatch = function() {
   Field.trans = true;
 
   App.actors = {};
+  Pickups.arr = [];
   App.state = 1;
 
   // reset mask
@@ -165,7 +170,18 @@ App.setActor = function(obj) {
 };
 
 
+App.drawHighScore = function() {
+  var c = 1;
+  for(var it in App.actors) {
+    text(NAMES[it % NAMES.length], App.width - 200, 50 * c, 30, COLORS[it % COLORS.length]);
+    text(App.scores[it] ||0, App.width - 50, 50 * c, 30, COLORS[it % COLORS.length]);
+    c++;
+  }
 
+  if(App.state == 0 && App.last_win >= 0) {
+    text(NAMES[App.last_win % NAMES.length] + " wins!", Field.size / 2, Field.size / 2, 40, '#FFF');
+  }
+}
 
 
 var COLORS = [
@@ -174,7 +190,15 @@ var COLORS = [
   '#00f',
   '#ff0',
   '#0ff',
-  'fff'
+  '#fff'
+];
+var NAMES = [
+  'Fred',
+  'Greenlee',
+  'Bluebell',
+  'Willem',
+  'Cynic',
+  'Walter'
 ];
 
 function text(text, x,y, size, color) {

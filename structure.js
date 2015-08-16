@@ -42,6 +42,11 @@ var PROT = [
     size: 5,
     id: 'Uint32',
     num: 'Uint8'
+  },
+  // 6: score a point
+  {
+    size: 4,
+    id: 'Uint32'
   }
 
 

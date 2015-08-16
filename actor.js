@@ -38,9 +38,29 @@ var Actor = function(id) {
     return y;
   };
 
+  this.isAlive = function() {
+    return state != 2;
+  };
+
 
   this.die = function() {
+    if(state == 2) return;  // you are already dead
     state = 2;
+    // how many are remaining, am i the last person?
+    var rem = 0, last_id = 0;
+    for(var it in App.actors) {
+      if(App.actors[it].isAlive()) {
+       rem++;
+       last_id = it;
+      }
+    }
+    console.log("i want a score point");
+    // i am the last one, i claim to get a score point
+    if(Object.keys(App.actors).length > 1 && rem == 1 && last_id == Client.getId())  // you dont get points for solo play
+      Client.sendEnd(last_id);
+    if(rem == 0) {  // played solo, no point, but start a new game
+      Client.sendEnd(-1);
+    }
   };
 
   this.respawn = function(obj) {

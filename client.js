@@ -66,6 +66,11 @@ var Client = {
         case 5:
           Pickups.effect(obj.id, obj.num);
           break;
+        case 6:
+          App.scores[obj.id] = App.scores[obj.id] + 1 || 1;
+          App.state = 0;  // after match;
+          App.last_win = obj.id;
+        break;
       }
     }
   },
@@ -90,5 +95,11 @@ var Client = {
       id: this.id,
       num: type
     }, 5));
+  },
+
+  sendEnd: function(id) {
+    ws.send(Structure.pack({
+      id: id
+    }, 6));
   }
 };

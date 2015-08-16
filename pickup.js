@@ -56,7 +56,7 @@ var Pickups = {
             if(it == id) continue;
 
             App.actors[it].calcSpeed(0.5);
-            setTimeout(function() { pp.actors[it].calcSpeed(2); }, 2000);
+            setTimeout(function() { App.actors[it].calcSpeed(2); }, 2000);
           }
         break;
         case 2:  // speed up self
