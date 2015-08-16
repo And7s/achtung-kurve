@@ -9,7 +9,8 @@ var Actor = function(id) {
       rot = 0,
       size = 2,
       state = 2,  // 0: waiting (before game start), 1: playing, 2: dead
-      invert = false;
+      invert = false,
+      time = 0;
 
   this.gap = 0,
   this.next_gap = 0;
@@ -42,6 +43,31 @@ var Actor = function(id) {
     return state != 2;
   };
 
+  this.dispatchEvent = function(obj) {
+
+    var delta = obj.time - time;
+
+    time = obj.time;
+    if(delta == 0) {
+      console.log("nothing to apply");
+      return;
+    }
+
+
+
+    // apply what happened in the past in 10ms intervals
+    var num = Math.floor(delta / 10);
+    for(var i = 0; i < num; i++) {
+      var delta_ref = delta / num / 32;   // reference time relative to 32ms
+
+      this.rotate(obj.dir, delta_ref);
+      this.gap = obj.gap;
+      this.next_gap = obj.next_gap;
+
+      this.update(delta_ref);
+
+    }
+  };
 
   this.die = function() {
     if(state == 2) return;  // you are already dead

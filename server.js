@@ -19,16 +19,26 @@ var Match = {
 
     Match.next_pickup = 2000 + Math.random() * 4000;
 
+    var num_users = Object.keys(all_user).length;
+    console.log("num user", num_users);
+    var count = Math.random() * num_users;  // rotation where to start
+
     for(var it in all_user) {
-      var x = Math.random() - 0.5;
-      var y = Math.random() - 0.5;
+      //var x = Math.random() - 0.5;
+      //var y = Math.random() - 0.5;
+      var x = Math.sin(2 * Math.PI / num_users * count) * 0.5;
+      var y = Math.cos(2 * Math.PI / num_users * count) * 0.5;
+      x *= Math.random() * 0.9;
+      y *= Math.random() * 0.9;
+
+      count++;
 
       var angle = Math.atan(y / x);
       if(x < 0 ) {
         angle = Math.PI + angle;
       }
       angle += Math.PI; // direct angle TO the center
-      angle += Math.random() * Math.PI / 2 - Math.PI / 4;   // max. 45^jitter
+      //angle += Math.random() * Math.PI / 2 - Math.PI / 4;   // max. 45^jitter
 
       this.actors[it] = {
         x: x + 0.5,
@@ -37,13 +47,14 @@ var Match = {
         id: all_user[it].getId(),
         gap: 0,
         next_gap: Math.random() * 2000,
-      }
+      };
 
       ab = Structure.append(
         ab,
         Structure.pack(this.actors[it], 2)
       );
     }
+    console.log(this.actors);
 
     broadcast(ab);
 
@@ -72,8 +83,9 @@ wss.on('connection', function(ws) {
   all_user[connections] = user;
   connections++;
   // now hes part of all users, inform others
-  //user.distributeUserData();
   Match.restart();
+
+
 });
 
 
@@ -122,7 +134,8 @@ var User = function(ws, id) {
         break;
       case 1: // direction update -> broadcast
         var that = Match.actors[_id];
-        if(that.gap <= now && that.gap != 0) { // gap changed to over
+        console.log("id: "+_id);
+        if(that.gap <= now && that.gap != 0) { // set gap changed to over
           that.gap = 0;
           that.next_gap = now + 500 + Math.random() * 1500;
         }
@@ -134,6 +147,8 @@ var User = function(ws, id) {
           var till_time = obj.time;
           obj.time = now; // update time
           obj.id = _id;
+          obj.gap = that.gap;
+          obj.next_gap = that.next_gap;
 
           Match.history.push(obj); // add to history
 
@@ -144,6 +159,7 @@ var User = function(ws, id) {
               // this was the last message (dont have to send again)
               if(Match.history[i].time == till_time && Match.history[i].id == _id) break;
               ab = Structure.append(Structure.pack(Match.history[i], 1), ab);
+              console.log("append message"+Match.history[i].dir);
             }else {
               console.log("no more events");
               break;

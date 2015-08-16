@@ -102,12 +102,13 @@ App.render = function() {
   }
 
   for(var it in App.actors) {
+    if(it == Client.getId())
     App.ctx.fillStyle="#FFFFFF";
     App.ctx.beginPath();
     App.ctx.arc(
       App.actors[it].getX() * Field.size + Field.offset_x,
       App.actors[it].getY() * Field.size + Field.offset_y,
-      size * App.scale,
+      size * App.scale * (it == Client.getId() && App.state == 1 ? 3:1),
       0,
       2 * Math.PI
     );
@@ -117,11 +118,12 @@ App.render = function() {
 
   App.drawHighScore();
 
-  window.requestAnimationFrame(App.render);
-  //setTimeout(App.render, 32)
+  //window.requestAnimationFrame(App.render);
+  setTimeout(App.render, 32)
 };
 
 App.createEvent = function(dir) {
+  //console.log("create event ", dir);
   if(App.state == 2) {  // you are allowed to input
     Client.sendDir(dir)
   }else {
@@ -130,37 +132,16 @@ App.createEvent = function(dir) {
 }
 
 App.dispatchEvent = function(obj) {
-  var delta = obj.time - App.time;
-  //console.log("delta t", delta);
+
   App.time = obj.time;
-  if(delta == 0) {
-    console.log("nothing to apply");
-    return;
-  }
 
-
-
-  // apply what happened in the past in 10ms intervals
-  var num = Math.floor(delta / 10);
-  for(var i = 0; i < num; i++) {
-    var delta_ref = delta / num / 32;   // reference time relative to 32ms
-
-    App.actors[obj.id].rotate(obj.dir, delta_ref);
-    App.actors[obj.id].gap = obj.gap;
-    App.actors[obj.id].next_gap = obj.next_gap;
-
-    for(var it in App.actors) {
-      App.actors[it].update(delta_ref);
-    }
-  }
-
-
+  App.actors[obj.id].dispatchEvent(obj);
 
 };
 
 App.restartMatch = function() {
   Field.ctx.clearRect(0, 0, Field.size, Field.size);  // clear context
-  Field.trans = true;
+  Field.trans = false;
 
   App.actors = {};
   Pickups.arr = [];
@@ -210,7 +191,9 @@ var COLORS = [
   '#00f',
   '#ff0',
   '#0ff',
-  '#fff'
+  '#fff',
+  '#BF5FFF',
+  '##FF69B4'
 ];
 var NAMES = [
   'Fred',
@@ -218,7 +201,9 @@ var NAMES = [
   'Bluebell',
   'Willem',
   'Cynic',
-  'Walter'
+  'Walter',
+  'Lilly',
+  'Pinky'
 ];
 
 function text(text, x,y, size, color) {
