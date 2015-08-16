@@ -13,6 +13,7 @@ App.init = function(images) {
   App.last_win = -1;
   App.resize();
   Key = new Key();
+  Touch = new Touch();
   Client.initialize();
   App.img = images[0];
 
@@ -59,9 +60,9 @@ App.render = function() {
       App.actors[it].update(1);
     }
 
-    if(Key.down(39)) {
+    if(Key.down(39) || Key.down(65)) {
       App.createEvent(1);
-    }else if(Key.down(37)) {
+    }else if(Key.down(37) || Key.down(68)) {
       App.createEvent(-1);
     }else {
       App.createEvent(0);
@@ -92,7 +93,7 @@ App.render = function() {
   }
 
 
-  App.ctx.rect(2.5, 2.5, Field.size+5 , Field.size+5 );
+  App.ctx.rect(Field.offset_x - 2.5, Field.offset_y -2.5, Field.size+5 , Field.size+5 );
   App.ctx.stroke();
   App.ctx.closePath();
 
@@ -240,3 +241,45 @@ function loadImages(sources, callback) {
 }
 
 $(loadImages(['power.png'], App.init));
+
+
+
+
+var Touch = function() {
+
+
+  document.body.addEventListener('touchstart', function(e){
+    handleStart(e);
+  }, false);
+
+  document.body.addEventListener('touchmove', function(e){
+    handleStart(e);
+  }, false);
+
+  document.body.addEventListener('touchend', function(e){
+      handleEnd(e);
+  }, false);
+
+  document.body.addEventListener('touchleave', function(e){
+      handleEnd(e);
+  }, false);
+  document.body.addEventListener('touchcancel', function(e){
+      handleEnd(e);
+  }, false);
+
+
+  var handleStart = function(e) {
+    console.log("start", e.touches[0].clientX);
+    var pos = e.touches[0].clientX;
+    var key = (pos / App.width) > 0.5 ? 39 : 37;
+    Key.simulate(key);
+    // 39 // 37
+  };
+
+  var handleEnd = function(e) {
+    console.log("end", e);
+    Key.reset(39);
+    Key.reset(37);
+  };
+
+};

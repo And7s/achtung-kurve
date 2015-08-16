@@ -21,6 +21,8 @@ var Key = function() {
   this.keydown = function(e) {
 
     var code = e.charCode || e.keyCode;
+    console.log(code);
+
     code = Math.min(code, 256);
     if(!down[code]) {
       hit[code] = true;
