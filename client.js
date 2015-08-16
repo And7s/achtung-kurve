@@ -1,7 +1,8 @@
 
 
 var ws;
-var HOST = 'localhost';
+//var HOST = 'localhost';
+var HOST = '212.227.97.146';
 var PORT = 8080;
 
 var Client = {
