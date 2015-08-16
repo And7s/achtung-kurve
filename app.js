@@ -75,14 +75,23 @@ App.render = function() {
 
   Pickups.draw();
 
+  App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
 
   // draw the border
   App.ctx.beginPath();
-  App.ctx.strokeStyle = "#FFFFFF";
+  App.ctx.lineWidth = 5;
+  if(Field.trans) {
+    App.ctx.strokeStyle = "#0F0";
+  }else {
+    App.ctx.strokeStyle = "#F00";
+  }
+
+
+
   App.ctx.rect(Field.offset_x, Field.offset_y, Field.size, Field.size);
   App.ctx.stroke();
   App.ctx.closePath();
-  App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
+
 
   // draw head
   var size = 3;
@@ -127,6 +136,8 @@ App.dispatchEvent = function(obj) {
 
 App.restartMatch = function() {
   Field.ctx.clearRect(0, 0, Field.size, Field.size);  // clear context
+  Field.trans = true;
+
   App.actors = {};
   App.state = 1;
 
@@ -159,8 +170,8 @@ var Actor = function(id) {
       speed = 0.001,
       rot = 0,
       size = 2,
-      state = 2;  // 0: waiting (before game start), 1: playing, 2: dead
-
+      state = 2,  // 0: waiting (before game start), 1: playing, 2: dead
+      invert = false;
 
   this.gap = 0,
   this.next_gap = 0;
@@ -179,7 +190,6 @@ var Actor = function(id) {
         Client.sendPickup(type);
       }
     }
-
   };
 
   this.getX = function() {
@@ -218,6 +228,10 @@ var Actor = function(id) {
     console.log("size now ", size);
   };
 
+  this.invert = function(bool) {
+    invert = bool;
+  };
+
   // moves and checks for collision
   this.move = function(dt) {
 
@@ -240,9 +254,11 @@ var Actor = function(id) {
          var cx =  Math.cos(rot + i) * (size + 1.5) + (x + dx) * App.maskRes ,
              cy =  Math.sin(rot + i) * (size + 1.5) + (y + dy) * App.maskRes ;
         // console.log("check "+cx+" "+cy);
-        if(App.mask[Math.round(cy) * App.maskRes + Math.round(cx)] == 1) {
-          console.log("collide");
-          this.die();
+        if(cx >= 0 && cx < App.maskRes && cy >= 0 && cy < App.maskRes) {  // avoid out of bounds
+          if(App.mask[Math.round(cy) * App.maskRes + Math.round(cx)] == 1) {
+            console.log("collide");
+            this.die();
+          }
         }
       }
       // set the mask, where someone has been
@@ -257,12 +273,16 @@ var Actor = function(id) {
 
     // collision check at borders
     if(x <= 0 || x >= 1 || y <= 0 || y >= 1) {
+      // port to other side
+      x = (x + 1) % 1;  // get in range 0-1
+      y = (y + 1) % 1;
       console.log("border dead");
-      this.die();
+      //this.die();
     }
   }
 
   this.rotate = function(dir, dt) {
+    if(invert) dir = -dir;
     rot += dir * dt * 0.05;
   };
 

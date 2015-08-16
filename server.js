@@ -121,7 +121,7 @@ var User = function(ws, id) {
           that.next_gap = now + 500 + Math.random() * 1500;
         }
         if(that.gap == 0 && that.next_gap <= now) { // gap changed to active
-          that.gap = now + Math.random() * 400 + 100;
+          that.gap = now + Math.random() * 600 + 100;
         }
 
         broadcast(Structure.pack({
