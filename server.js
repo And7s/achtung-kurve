@@ -132,6 +132,12 @@ var User = function(ws, id) {
           next_gap: that.next_gap
         }, 1));
         break;
+      case 5:
+        broadcast(Structure.pack({
+          id: _id,
+          num: obj.num
+        }, 5));
+      break;
     }
 
 

@@ -63,20 +63,32 @@ var Client = {
           console.log(obj);
           Pickups.add(obj.num, obj.x, obj.y);
           break;
+        case 5:
+          Pickups.effect(obj.id, obj.num);
+          break;
       }
     }
   },
 
   getId: function() {
-    return id;
+    return this.id;
   },
 
   sendDir: function(dir) {
     if(ws.readyState !== 1) return;
-    //console.log("send");
+
     ws.send(Structure.pack({
       id: this.id,
       dir: dir
     }, 1));
+  },
+
+  sendPickup: function(type) {
+    if(ws.readyState !== 1) return;
+
+    ws.send(Structure.pack({
+      id: this.id,
+      num: type
+    }, 5));
   }
 };

@@ -67,12 +67,11 @@ App.render = function() {
   App.ctx.clearRect(Field.offset_x, Field.offset_y, Field.size, Field.size);
 
   // time
-  if(App.time) {
+  if(App.time != null) {
     var t = Math.round((App.time - 2000) / 100) / 10;
     t = t.toFixed(1);
     text(t, 50, 80, 50, '#fff');
   }
-
 
   Pickups.draw();
 
@@ -112,8 +111,11 @@ App.render = function() {
 };
 
 App.createEvent = function(dir) {
-  if(App.state == 2)
+  if(App.state == 2) {  // you are allowed to input
     Client.sendDir(dir)
+  }else {
+    Client.sendDir(0);  // just to keep communication alvie
+  }
 }
 
 App.dispatchEvent = function(obj) {
@@ -170,9 +172,14 @@ var Actor = function(id) {
     this.move(dt /2);
     this.draw();
 
-    if(Pickups.collide) {
 
+    var type;
+    if((type = Pickups.collide(x, y)) !== false) {
+      if(Client.getId() == id) {
+        Client.sendPickup(type);
+      }
     }
+
   };
 
   this.getX = function() {
@@ -199,6 +206,16 @@ var Actor = function(id) {
   this.live = function() {
     state = 1;
     speed = 0.005;
+  };
+
+  this.calcSpeed = function(factor) {
+    speed *= factor;
+    console.log("speed now ", speed);
+  };
+
+  this.calcSize = function(factor) {
+    size *= factor;
+    console.log("size now ", size);
   };
 
   // moves and checks for collision

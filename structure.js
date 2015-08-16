@@ -39,7 +39,7 @@ var PROT = [
   },
   // 5: collect a size
   {
-    pickup: 5,
+    size: 5,
     id: 'Uint32',
     num: 'Uint8'
   }
