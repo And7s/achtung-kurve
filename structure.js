@@ -29,6 +29,19 @@ var PROT = [
   {
     size: 4,
     time: 'Uint32'
+  },
+  // 4: add a new pickup (pickup spawn)
+  {
+    size: 9,
+    x: 'Float32',
+    y: 'Float32',
+    num: 'Uint8'
+  },
+  // 5: collect a size
+  {
+    pickup: 5,
+    id: 'Uint32',
+    num: 'Uint8'
   }
 
 

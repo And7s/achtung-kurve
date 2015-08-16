@@ -58,8 +58,17 @@ var Client = {
           App.time = obj.time;
           App.restartMatch();
           break;
+        case 4:
+          console.log("add pickup in client");
+          console.log(obj);
+          Pickups.add(obj.num, obj.x, obj.y);
+          break;
       }
     }
+  },
+
+  getId: function() {
+    return id;
   },
 
   sendDir: function(dir) {

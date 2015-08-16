@@ -5,6 +5,7 @@ var Match = {
   state: 0,  // 0: waiting, 1: playing
   actors: {},
   history: [],
+  next_pickup: 0,
 
   restart: function() {
     console.log("will restart game");
@@ -14,6 +15,7 @@ var Match = {
       time: 0
     }, 3);
 
+    Match.next_pickup = 2000 + Math.random() * 4000;
 
     for(var it in all_user) {
       var x = Math.random() - 0.5;
@@ -106,14 +108,13 @@ var User = function(ws, id) {
 
   var processMessage = function(obj) {
     obj.from = id;
+    var now = getTime() - start_time;
     var ab = Structure.pack(obj, obj.type );
     //console.log("recv ", obj);
     switch(obj.type) {
       case 0:  // not interested in welcome message
         break;
       case 1: // direction update -> broadcast
-        var now = getTime() - start_time;
-
         var that = Match.actors[_id];
         if(that.gap <= now && that.gap != 0) { // gap changed to over
           that.gap = 0;
@@ -131,6 +132,18 @@ var User = function(ws, id) {
           next_gap: that.next_gap
         }, 1));
         break;
+    }
+
+
+    // general check
+    if(Match.next_pickup < now) {
+      console.log("new pickup");
+      broadcast(Structure.pack({
+        x: Math.random(),
+        y: Math.random(),
+        num: Math.floor(Math.random() * 9)
+      }, 4));
+      Match.next_pickup = now + Math.random() * 5000;
     }
 
   };
