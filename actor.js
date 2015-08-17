@@ -49,8 +49,7 @@ var Actor = function(id) {
     var delta = obj.time - time;
 
     time = obj.time;
-    if(delta == 0) {
-      console.log("nothing to apply");
+    if(delta <= 0) {
       return;
     }
 

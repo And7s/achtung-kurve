@@ -134,7 +134,7 @@ var User = function(ws, id) {
         break;
       case 1: // direction update -> broadcast
         var that = Match.actors[_id];
-        console.log("id: "+_id);
+        //console.log("id: "+_id);
         if(that.gap <= now && that.gap != 0) { // set gap changed to over
           that.gap = 0;
           that.next_gap = now + 500 + Math.random() * 1500;
@@ -143,7 +143,7 @@ var User = function(ws, id) {
           that.gap = now + Math.random() * 600 + 100;
         }
         if(Match.state != 0) {
-          console.log("get state at time "+ obj.time + "server time "+now+" delay "+ (now - obj.time));
+          //console.log("get state at time "+ obj.time + "server time "+now+" delay "+ (now - obj.time));
           var till_time = obj.time;
           obj.time = now; // update time
           obj.id = _id;
@@ -159,16 +159,13 @@ var User = function(ws, id) {
               // this was the last message (dont have to send again)
               if(Match.history[i].time == till_time && Match.history[i].id == _id) break;
               ab = Structure.append(Structure.pack(Match.history[i], 1), ab);
-              console.log("append message"+Match.history[i].dir);
+              //console.log("append message"+Match.history[i].dir);
             }else {
               console.log("no more events");
               break;
             }
           }
-
-          console.log("match history length", Match.history.length);
-          //if(Math.random() > 0.5)
-            _this.send(ab);
+          _this.send(ab);
 
         }
         break;
