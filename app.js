@@ -193,7 +193,7 @@ var COLORS = [
   '#0ff',
   '#fff',
   '#BF5FFF',
-  '##FF69B4'
+  '#FF69B4'
 ];
 var NAMES = [
   'Fred',

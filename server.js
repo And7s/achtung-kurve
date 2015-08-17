@@ -167,8 +167,8 @@ var User = function(ws, id) {
           }
 
           console.log("match history length", Match.history.length);
-
-          _this.send(ab);
+          //if(Math.random() > 0.5)
+            _this.send(ab);
 
         }
         break;

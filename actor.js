@@ -10,7 +10,8 @@ var Actor = function(id) {
       size = 2,
       state = 2,  // 0: waiting (before game start), 1: playing, 2: dead
       invert = false,
-      time = 0;
+      time = 0,
+      dir = 0;  // which side is pressed
 
   this.gap = 0,
   this.next_gap = 0;
@@ -53,20 +54,20 @@ var Actor = function(id) {
       return;
     }
 
-
-
     // apply what happened in the past in 10ms intervals
     var num = Math.floor(delta / 10);
     for(var i = 0; i < num; i++) {
       var delta_ref = delta / num / 32;   // reference time relative to 32ms
 
-      this.rotate(obj.dir, delta_ref);
-      this.gap = obj.gap;
-      this.next_gap = obj.next_gap;
+      this.rotate(dir, delta_ref);
 
       this.update(delta_ref);
 
     }
+    dir = obj.dir;  // apply
+    this.gap = obj.gap; // rotate depending on old change
+    this.next_gap = obj.next_gap;
+
   };
 
   this.die = function() {
