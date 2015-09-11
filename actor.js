@@ -1,7 +1,4 @@
 
-
-
-
 var Actor = function(id) {
   var x = 0.5,
       y = 0.5,
@@ -47,8 +44,9 @@ var Actor = function(id) {
   this.dispatchEvent = function(obj) {
 
     var delta = obj.time - time;
-
+    console.log(id + " delta "+delta+" time "+obj.time);
     time = obj.time;
+
     if(delta <= 0) {
       return;
     }

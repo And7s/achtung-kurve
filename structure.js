@@ -56,25 +56,27 @@ var Structure = {
   parse: function(ab, callback) {
     if (ab instanceof ArrayBuffer) {
       //is already array buffer
-
     } else {
       ab = this.toArrayBuffer(ab)
     }
 
     var dv = new DataView(ab);
-
+    var ret = [];
     var length = ab.byteLength;
 
     var ind = 0;
     while(ind < length) { // support for multiple messages per package
       var type = dv.getUint8(ind++, true);
+      var p_id = dv.getUint32(ind, true);
+      console.log("parsed pid ", p_id);
+      ind += 4;
       if(type < 0 || type >= PROT.length) {
         console.log("unsupported type ", type);
         return;
       }
 
       var prot = PROT[type];
-      var obj = {type: type};
+      var obj = {type: type, p_id: p_id};
 
       for(var key in prot) {  //no prototype assigned
         if(key == 'size') continue;
@@ -109,8 +111,9 @@ var Structure = {
         }
         obj[key] = val;
       }
-      callback(obj);
+      ret.push(obj);
     }
+    callback(ret);
   },
 
   // concatenate two array buffers
@@ -127,10 +130,11 @@ var Structure = {
     }
 
     var prot = PROT[type];
-    var ab = new ArrayBuffer(prot.size+1);
+    var ab = new ArrayBuffer(prot.size + 5);  // per default each package has a type and a p_id
     var dv = new DataView(ab);
     dv.setUint8(0, type);
-    var ind = 1;
+    dv.setUint32(1, obj.p_id, true);
+    var ind = 5;
 
     for(var key in prot) {  //no prototype assigned
       if(key == 'size') continue;

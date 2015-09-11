@@ -1,15 +1,17 @@
 
 
 var ws;
-//var HOST = '192.168.2.100';
+var HOST = '192.168.2.100';
 //var HOST = 'localhost';
-var HOST = '212.227.97.146';
+//var HOST = '212.227.97.146';
 var PORT = 8080;
 
+var Hist = [];
 var Client = {
   active: false,
   timeout: null,
   id: null,
+  p_id: 0,
 
   initialize: function() {
 
@@ -43,14 +45,23 @@ var Client = {
       }
     };
 
-    var processMessage = function(obj) {
+    var processMessage = function(objs) {
 
-      switch(obj.type) {
+      console.log("message", objs);
+      for(var i = 0; i < objs.length; i++) {
+
+        var obj = objs[i];
+        Hist.push(obj);
+        console.log(obj);
+        App.time = obj.time;
+        Client.p_id = Math.max(obj.p_id, Client.p_id);
+
+        switch(obj.type) {
         case 0:
           Client.id = obj.id;
           App.state = obj.state;
           break;
-        case 1:
+        /*case 1:
           App.dispatchEvent(obj);
           break;
         case 2:
@@ -72,23 +83,40 @@ var Client = {
           App.scores[obj.id] = App.scores[obj.id] + 1 || 1;
           App.state = 0;  // after match;
           App.last_win = obj.id;
-        break;
+        break;*/
+        }
+
       }
     }
+  },
+
+  push: function() {  // send data with timestamp to the client inform him abut what has changed
+    console.log("try send package to client");
+    if(ws.readyState !== 1 || this.id === null) return;
+    console.log("send");
+    ws.send(Structure.pack({
+      id: this.id,
+      dir: 1,
+      time: App.time,
+      p_id: Client.p_id
+    }, 1));
+
   },
 
   getId: function() {
     return this.id;
   },
 
+
   sendDir: function(dir) {
+    /*
     if(ws.readyState !== 1 || this.id === null) return;
 
     ws.send(Structure.pack({
       id: this.id,
       dir: dir,
       time: App.time
-    }, 1));
+    }, 1));*/
   },
 
   sendPickup: function(type) {
@@ -106,3 +134,8 @@ var Client = {
     }, 6));
   }
 };
+
+
+setInterval(function() {
+  Client.push()
+}, 500);

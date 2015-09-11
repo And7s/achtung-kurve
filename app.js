@@ -119,7 +119,7 @@ App.render = function() {
   App.drawHighScore();
 
   //window.requestAnimationFrame(App.render);
-  setTimeout(App.render, 32)
+  setTimeout(App.render, 16)
 };
 
 App.createEvent = function(dir) {

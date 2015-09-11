@@ -159,13 +159,17 @@ var User = function(ws, id) {
               // this was the last message (dont have to send again)
               if(Match.history[i].time == till_time && Match.history[i].id == _id) break;
               ab = Structure.append(Structure.pack(Match.history[i], 1), ab);
+              console.log("send message " + i + " to " + _id + " time " + Match.history[i].time);
               //console.log("append message"+Match.history[i].dir);
             }else {
               console.log("no more events");
               break;
             }
           }
-          _this.send(ab);
+          setTimeout(function() {
+            _this.send(ab);
+          }, 10);
+
 
         }
         break;
