@@ -54,17 +54,7 @@ App.render = function() {
     }
   }
 
-  // no pause
-  if(App.state != 0) {
 
-    if(Key.down(39) || Key.down(68)) {
-      App.createEvent(1);
-    }else if(Key.down(37) || Key.down(65)) {
-      App.createEvent(-1);
-    }else {
-      App.createEvent(0);
-    }
-  }
 
   // clear
   App.ctx.clearRect(0, 0, App.width, App.height);
@@ -122,18 +112,9 @@ App.render = function() {
   setTimeout(App.render, 16)
 };
 
-App.createEvent = function(dir) {
-  //console.log("create event ", dir);
-  if(App.state == 2) {  // you are allowed to input
-    Client.sendDir(dir)
-  }else {
-    Client.sendDir(0);  // just to keep communication alvie
-  }
-}
-
 App.dispatchEvent = function(obj) {
 
-  App.time = obj.time;
+  //App.time = obj.time;
 
   App.actors[obj.id].dispatchEvent(obj);
 

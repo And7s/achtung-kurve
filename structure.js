@@ -68,7 +68,6 @@ var Structure = {
     while(ind < length) { // support for multiple messages per package
       var type = dv.getUint8(ind++, true);
       var p_id = dv.getUint32(ind, true);
-      console.log("parsed pid ", p_id);
       ind += 4;
       if(type < 0 || type >= PROT.length) {
         console.log("unsupported type ", type);
@@ -119,7 +118,14 @@ var Structure = {
   // concatenate two array buffers
   append: function(a, b) {
     // only supported on the server side
-    return Buffer.concat([a,b]);
+    if(typeof(Buffer) != "undefined") {  // server side supports
+      return Buffer.concat([a,b]);
+    }else {
+      var tmp = new Uint8Array(a.byteLength + b.byteLength);
+      tmp.set(new Uint8Array(a), 0);
+      tmp.set(new Uint8Array(b), a.byteLength);
+      return tmp.buffer;
+    }
   },
 
 

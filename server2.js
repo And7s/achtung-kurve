@@ -10,6 +10,8 @@ var Server = {
   all_user: {},
   time: getTime(), // reference time, when server did start
   now: 0, // time the match is running
+  p_id: 1,
+
   updateTime: function() {
     Server.now = getTime() - Server.time;
     return Server.now;
@@ -67,23 +69,24 @@ var User = function(ws, id) {
   var processMessage = function(objs) {
     for(var i = 0; i < objs.length; i++) {
       var obj = objs[i];
-      console.log("got msg", obj);
+      //console.log("got msg", obj);
 
-      console.log("history has lengt "+Hist.length);
+      console.log("history has lengt "+Hist.length+" user "+_id+" is at state "+_user_p_id+" server state "+Server.p_id);
       _user_p_id = Math.max(obj.p_id, _user_p_id);
-      console.log("user is at state ", _user_p_id);
+      //console.log("user is at state ", _user_p_id);
       obj.from = id;
       obj.time = Server.updateTime();
-      obj.p_id = Hist.length;
+      obj.p_id = Server.p_id++;
       Hist.push(obj);
 
-      var ab = Structure.pack(obj, obj.type );
+      //var ab = Structure.pack(obj, obj.type );
     }
   };
 
 
    // will remove current user (which has rank _rank) and update other ranks
   this.disconnect = function() {
+    clearInterval(_interval);
     delete Server.all_user[_id];
   };
 
@@ -92,7 +95,6 @@ var User = function(ws, id) {
   };
 
   this.send = function(obj) {
-    console.log("try send to "+_id);
     try {
       _ws.send(obj);
     }catch(e) {
@@ -101,15 +103,13 @@ var User = function(ws, id) {
   };
 
   this.push = function() {
-    console.log("will push data to client");
-    console.log("Client is behind"+(Hist.length - _user_p_id));
-
     // collect events till this time point, go back in time
     var ab = new Buffer(0);
-    for(var i = _user_p_id + 1; i < Hist.length; i++) {
+    var num = Hist[Hist.length - 1].p_id - _user_p_id;
+    console.log("last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num);
+    //console.log(Hist);
+    for(var i = Math.max(Hist.length - num, 0); i < Hist.length; i++) {
       ab = Structure.append(ab, Structure.pack(Hist[i], Hist[i].type));
-      console.log("send message " + i + " to " + _id + " time " + Hist[i].time+" p_id"+Hist[i].p_id);
-
     }
     _this.send(ab);
   };
@@ -122,17 +122,14 @@ var User = function(ws, id) {
   }, 0));
 
 
-  setInterval(function() {
+  var _interval = setInterval(function() {
     _this.push();
-  }, 1000);
+  }, 10);
 };
 
 function getTime() {
   return (new Date()).getTime();
 }
-
-
-
 
 
 var Match = {
@@ -142,13 +139,14 @@ var Match = {
 
   restart: function() {
     console.log("will restart game");
-
+    Server.time = getTime();
     Match.state = 1;  // awakening
     Hist = [];
 
     Hist.push({
       type: 3,
-      time: Server.updateTime()
+      time: Server.updateTime(),
+      p_id: Server.p_id++
     }); // start a new game
 
     Match.next_pickup = 2000 + Math.random() * 4000;
@@ -182,6 +180,7 @@ var Match = {
         id: Server.all_user[it].getId(),
         gap: 0,
         next_gap: Math.random() * 2000,
+        p_id: Server.p_id++
       };
 
       Hist.push(this.actors[it]); // spawn position of actors

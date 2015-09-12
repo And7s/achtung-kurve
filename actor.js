@@ -44,18 +44,19 @@ var Actor = function(id) {
   this.dispatchEvent = function(obj) {
 
     var delta = obj.time - time;
-    console.log(id + " delta "+delta+" time "+obj.time);
     time = obj.time;
 
     if(delta <= 0) {
       return;
     }
+    console.log(id + " delta "+delta+" time "+obj.time+ " "+obj.p_id);
+
 
     // apply what happened in the past in 10ms intervals
     var num = Math.floor(delta / 10);
     for(var i = 0; i < num; i++) {
       var delta_ref = delta / num / 32;   // reference time relative to 32ms
-
+      // console.log("delta ref is ", delta_ref);
       this.rotate(dir, delta_ref);
 
       this.update(delta_ref);

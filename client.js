@@ -11,7 +11,8 @@ var Client = {
   active: false,
   timeout: null,
   id: null,
-  p_id: 0,
+  p_id: -1,
+  sendqueue: new ArrayBuffer(0),
 
   initialize: function() {
 
@@ -24,6 +25,7 @@ var Client = {
 
     ws.onopen = function(e) {
       that.active = true;
+      Client.p_id = -1;
       console.log("Connected to "+HOST+":"+PORT);
     };
 
@@ -46,13 +48,19 @@ var Client = {
     };
 
     var processMessage = function(objs) {
-
-      console.log("message", objs);
+      //console.log("message", objs);
       for(var i = 0; i < objs.length; i++) {
-
         var obj = objs[i];
+        console.log("mypid "+Client.p_id+" vs "+obj.p_id);
+        if(Client.p_id == obj.p_id) return; // already allied this change
+        if(Client.p_id > obj.p_id) {
+          console.log("error wrong pids");
+          console.log(obj);
+          //debugger;
+          return;
+        }
         Hist.push(obj);
-        console.log(obj);
+        //console.log(obj);
         App.time = obj.time;
         Client.p_id = Math.max(obj.p_id, Client.p_id);
 
@@ -61,7 +69,7 @@ var Client = {
           Client.id = obj.id;
           App.state = obj.state;
           break;
-        /*case 1:
+        case 1:
           App.dispatchEvent(obj);
           break;
         case 2:
@@ -83,7 +91,7 @@ var Client = {
           App.scores[obj.id] = App.scores[obj.id] + 1 || 1;
           App.state = 0;  // after match;
           App.last_win = obj.id;
-        break;*/
+        break;
         }
 
       }
@@ -91,32 +99,35 @@ var Client = {
   },
 
   push: function() {  // send data with timestamp to the client inform him abut what has changed
-    console.log("try send package to client");
     if(ws.readyState !== 1 || this.id === null) return;
-    console.log("send");
-    ws.send(Structure.pack({
-      id: this.id,
-      dir: 1,
-      time: App.time,
-      p_id: Client.p_id
-    }, 1));
 
+
+    var sendDir = 0;
+    // no pause
+    if(App.state == 2) {
+      if(Key.down(39) || Key.down(68)) {
+        sendDir = 1;
+      }else if(Key.down(37) || Key.down(65)) {
+        sendDir = -1;
+      }
+    }
+
+
+    Client.sendqueue =
+      Structure.pack({
+        id: this.id,
+        dir: sendDir,
+        time: App.time,
+        p_id: Client.p_id
+      }, 1),
+
+
+    ws.send(Client.sendqueue);
+    //Client.sendqueue = new ArrayBuffer(0);
   },
 
   getId: function() {
     return this.id;
-  },
-
-
-  sendDir: function(dir) {
-    /*
-    if(ws.readyState !== 1 || this.id === null) return;
-
-    ws.send(Structure.pack({
-      id: this.id,
-      dir: dir,
-      time: App.time
-    }, 1));*/
   },
 
   sendPickup: function(type) {
@@ -138,4 +149,4 @@ var Client = {
 
 setInterval(function() {
   Client.push()
-}, 500);
+}, 10);
