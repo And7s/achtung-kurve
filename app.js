@@ -116,8 +116,10 @@ App.render = function() {
 App.dispatchEvent = function(obj) {
 
   //App.time = obj.time;
+  for(var it in App.actors) {
+    App.actors[it].dispatchEvent(obj);
+  }
 
-  App.actors[obj.id].dispatchEvent(obj);
 
 };
 

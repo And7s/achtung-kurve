@@ -58,14 +58,13 @@ var Actor = function(id) {
       var delta_ref = delta / num / 32;   // reference time relative to 32ms
       // console.log("delta ref is ", delta_ref);
       this.rotate(dir, delta_ref);
-
       this.update(delta_ref);
-
     }
-    dir = obj.dir;  // apply
-    this.gap = obj.gap; // rotate depending on old change
-    this.next_gap = obj.next_gap;
-
+    if(obj.id == id) {  // this is an update for explicit this actor
+      dir = obj.dir;  // apply
+      this.gap = obj.gap; // rotate depending on old change
+      this.next_gap = obj.next_gap;
+    }
   };
 
   this.die = function() {
