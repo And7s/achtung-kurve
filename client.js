@@ -11,7 +11,7 @@ var Client = {
   active: false,
   timeout: null,
   id: null,
-  p_id: -1,
+  p_id: 0,
   sendqueue: new ArrayBuffer(0),
 
   initialize: function() {
@@ -25,7 +25,7 @@ var Client = {
 
     ws.onopen = function(e) {
       that.active = true;
-      Client.p_id = -1;
+      Client.p_id = 0;
       console.log("Connected to "+HOST+":"+PORT);
     };
 
@@ -166,4 +166,4 @@ var Client = {
 
 setInterval(function() {
   Client.push()
-}, 10);
+}, 20);

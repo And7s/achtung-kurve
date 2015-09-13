@@ -138,7 +138,7 @@ var User = function(ws, id) {
 
   var _interval = setInterval(function() {
     _this.push();
-  }, 10);
+  }, 20);
 };
 
 function getTime() {
