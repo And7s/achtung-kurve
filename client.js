@@ -103,9 +103,11 @@ var Client = {
           App.scores[obj.id] = App.scores[obj.id] + 1 || 1;
           App.state = 0;  // after match;
           App.last_win = obj.id;
-        break;
+          break;
+        case 7: // invert pickup
+          Pickups.disEffect(obj.id, obj.num);
+          break;
         }
-
       }
     }
   },

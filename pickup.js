@@ -49,56 +49,86 @@ var Pickups = {
     switch(type) {
       case 0:  // slow down self
         App.actors[id].calcSpeed(0.5);
-        setTimeout(function() { App.actors[id].calcSpeed(2); }, 2000);
         break;
-        case 1: // slow down others
-          for(var it in App.actors) {
-            if(it == id) continue;
+      case 1: // slow down others
+        for(var it in App.actors) {
+          if(it == id) continue;
+          App.actors[it].calcSpeed(0.5);
+        }
+        break;
+      case 2:  // speed up self
+        App.actors[id].calcSpeed(2);
+        break;
+      case 3:  // speed up others
+        for(var it in App.actors) {
+          if(it == id) continue;
+          App.actors[it].calcSpeed(2);
+        }
+        break;
+      case 4: // others bolder
+        for(var it in App.actors) {
+          if(it == id) continue;
+          App.actors[it].calcSize(2);
+        }
+        break;
+      case 5: // invert others
+        for(var it in App.actors) {
+          if(it == id) continue;
+          App.actors[it].invert(true);
+        }
+        break;
+      case 6: // borders translucent
+        Field.trans = true;
+        break;
+      case 7: // smaller self
+        App.actors[id].calcSize(0.5);
+        break;
+      case 8: // borders static
+        Field.trans = false;
+        break;
+    }
+  },
 
-            App.actors[it].calcSpeed(0.5);
-            setTimeout(function() { App.actors[it].calcSpeed(2); }, 2000);
-          }
+  disEffect: function(id, type) {
+    console.log("DisEffect pickup "+ type + "picked up by"+id);
+    switch(type) {
+      case 0:  // slow down self
+        App.actors[id].calcSpeed(2);
         break;
-        case 2:  // speed up self
-          App.actors[id].calcSpeed(2);
-          setTimeout(function() { App.actors[id].calcSpeed(0.5); }, 2000);
+      case 1: // slow down others
+        for(var it in App.actors) {
+          if(it == id) continue;
+          App.actors[it].calcSpeed(2);
+        }
         break;
-        case 3:  // speed up others
-          for(var it in App.actors) {
-            if(it == id) continue;
-
-            App.actors[it].calcSpeed(2);
-            setTimeout(function() { App.actors[it].calcSpeed(0.5); }, 2000);
-          }
+      case 2:  // speed up self
+        App.actors[id].calcSpeed(0.5);
         break;
-        case 4: // others bolder
-          for(var it in App.actors) {
-            if(it == id) continue;
-
-            App.actors[it].calcSize(2);
-            setTimeout(function() { App.actors[it].calcSize(0.5); }, 4000);
-          }
+      case 3:  // speed up others
+        for(var it in App.actors) {
+          if(it == id) continue;
+          App.actors[it].calcSpeed(0.5);
+        }
         break;
-        case 5: // invert others
-          for(var it in App.actors) {
-            if(it == id) continue;
-
-            App.actors[it].invert(true);
-            setTimeout(function() { App.actors[it].invert(false); }, 3000);
-          }
+      case 4: // others bolder
+        for(var it in App.actors) {
+          if(it == id) continue;
+          App.actors[it].calcSize(0.5);
+        }
         break;
-        case 6: // borders translucent
-          Field.trans = true;
+      case 5: // invert others
+        for(var it in App.actors) {
+          if(it == id) continue;
+          App.actors[it].invert(false);
+        }
         break;
-        case 7: // smaller self
-          App.actors[id].calcSize(0.5);
-          setTimeout(function() { App.actors[id].calcSize(2); }, 4000);
+      case 6: // borders translucent
         break;
-        case 8: // borders static
-          Field.trans = false;
+      case 7: // smaller self
+        App.actors[id].calcSize(2);
         break;
-
+      case 8: // borders static
+        break;
     }
   }
 };
-

@@ -51,8 +51,14 @@ var PROT = [
     size: 8,
     id: 'Uint32',
     time: 'Uint32'
+  },
+  // 7: diseffect (reverts 5)
+  {
+    size: 9,
+    id: 'Uint32',
+    num: 'Uint8',
+    time: 'Uint32'
   }
-
 
 ];
 

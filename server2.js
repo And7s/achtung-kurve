@@ -92,6 +92,10 @@ var User = function(ws, id) {
           obj.gap = Match.actors[_id].gap;
           obj.next_gap = Match.actors[_id].next_gap;
           break;
+        case 5:
+          // pickup was collected, create opposite effect
+          handlePickup(obj);
+        break;
         case 6:
           Match.state = 0;  // pause
           setTimeout(function() {
@@ -132,7 +136,7 @@ var User = function(ws, id) {
     // collect events till this time point, go back in time
     var ab = new Buffer(0);
     var num = Hist[Hist.length - 1].p_id - _user_p_id;
-    console.log("last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
+    console.log(_id+" last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
     //console.log(Hist);
     for(var i = Math.max(Hist.length - num, 0); i < Hist.length; i++) {
       ab = Structure.append(ab, Structure.pack(Hist[i], Hist[i].type));
@@ -219,7 +223,6 @@ var Match = {
     setTimeout(function() {
       Match.state = 2;
     }, 2000);
-
   },
 
   update: function() {
@@ -249,8 +252,6 @@ var Match = {
       Match.next_pickup = Server.now + Math.random() * 5000;
     }
   },
-
-
 };
 
 setInterval(function() {
@@ -271,3 +272,14 @@ setInterval(function() {
     last_time: getTime()
   };
 }, 999)
+
+
+var handlePickup = function(obj) {
+  setTimeout(function() {
+    console.log("append revert");
+    obj.type = 7; // diseffect
+    obj.time = Server.updateTime();
+    obj.p_id = Server.p_id++;
+    Hist.push(obj);
+  }, 2000);
+}
