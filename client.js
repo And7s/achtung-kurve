@@ -53,11 +53,14 @@ var Client = {
         var obj = objs[i];
         console.log("mypid "+Client.p_id+" vs "+obj.p_id);
         if(Client.p_id == obj.p_id) return; // already allied this change
-        if(Client.p_id > obj.p_id) {
-          console.log("error wrong pids");
+        if(Client.p_id > obj.p_id) {  // client already has this patch applied
+          //console.log("error wrong pids");
           console.log(obj);
           //debugger;
           return;
+        }
+        if(Client.p_id != obj.p_id -1) {
+          debugger;
         }
         Hist.push(obj);
         //console.log(obj);

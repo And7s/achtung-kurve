@@ -74,9 +74,16 @@ var User = function(ws, id) {
       console.log("history has lengt "+Hist.length+" user "+_id+" is at state "+_user_p_id+" server state "+Server.p_id);
       _user_p_id = Math.max(obj.p_id, _user_p_id);
       //console.log("user is at state ", _user_p_id);
-      obj.from = id;
+      obj.from = _id;
       obj.time = Server.updateTime();
       obj.p_id = Server.p_id++;
+      switch(obj.type) {
+        case 1:
+          obj.gap = Match.actors[_id].gap;
+          obj.next_gap = Match.actors[_id].next_gap;
+          break;
+      }
+
       Hist.push(obj);
 
       //var ab = Structure.pack(obj, obj.type );
@@ -106,7 +113,7 @@ var User = function(ws, id) {
     // collect events till this time point, go back in time
     var ab = new Buffer(0);
     var num = Hist[Hist.length - 1].p_id - _user_p_id;
-    console.log("last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num);
+    console.log("last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
     //console.log(Hist);
     for(var i = Math.max(Hist.length - num, 0); i < Hist.length; i++) {
       ab = Structure.append(ab, Structure.pack(Hist[i], Hist[i].type));
@@ -191,5 +198,39 @@ var Match = {
       Match.state = 2;
     }, 2000);
 
-  }
+  },
+
+  update: function() {
+    Server.updateTime();
+    // gaps for users
+    for(var it in this.actors) {
+      var actor = this.actors[it];
+      if(actor.gap <= Server.now && actor.gap != 0) { // set gap changed over
+        actor.gap = 0;
+        actor.next_gap = Server.now + 500 + Math.random() * 1500;
+      }
+      if(actor.gap == 0 && actor.next_gap <= Server.now) {  // gap changed to active
+        actor.gap = Server.now + Math.random() * 700 + 300;
+      }
+    }
+    // pickups
+    if(Match.next_pickup <= Server.now && Match.state != 0) {
+      console.log("new pickup");
+      Hist.push({
+        type: 4,
+        p_id: Server.p_id++,
+        time: Server.now,
+        x: Math.random(),
+        y: Math.random(),
+        num: Math.floor(Math.random() * 9)
+      });
+      Match.next_pickup = Server.now + Math.random() * 5000;
+    }
+  },
+
+
 };
+
+setInterval(function() {
+  Match.update()
+}, 33);
