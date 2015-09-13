@@ -13,7 +13,7 @@ var Server = {
   p_id: 1,
 
   updateTime: function() {
-    Server.now = (getTime() - Server.time) / 2;
+    Server.now = (getTime() - Server.time);
     return Server.now;
   },
   broadcast: function (ab, exclude) { // broadcast to anyone, but the sender
