@@ -165,4 +165,4 @@ var Client = {
 
 setInterval(function() {
   Client.push()
-}, 30);
+}, 15);

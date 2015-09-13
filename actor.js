@@ -14,15 +14,10 @@ var Actor = function(id) {
   this.next_gap = 0;
 
   this.update = function(dt) {
-    if(state == 2) return; // you are dead
-    this.move(dt /2);
-    this.draw();
-    this.move(dt /2);
-    this.draw();
-
+    this.move(dt);
 
     var type;
-    if((type = Pickups.collide(x, y)) !== false) {
+    if((type = Pickups.collide(x, y)) !== false) {  // check collision with pickups
       if(Client.getId() == id) {
         Client.sendPickup(type);
       }
@@ -51,14 +46,16 @@ var Actor = function(id) {
     }
     //console.log(id + " delta "+delta+" time "+obj.time+ " "+obj.p_id);
 
-
     // apply what happened in the past in 10ms intervals
     var num = Math.ceil(delta / 10);
     for(var i = 0; i < num; i++) {
       var delta_ref = delta / num / 32;   // reference time relative to 32ms
       // console.log("delta ref is ", delta_ref);
-      this.rotate(dir, delta_ref);
-      this.update(delta_ref);
+      if(this.isAlive()) {
+        this.rotate(dir, delta_ref);
+        this.update(delta_ref);
+        this.draw();
+      }
     }
     if(obj.id == id) {  // this is an update for explicit this actor
       dir = obj.dir;  // apply
@@ -136,8 +133,11 @@ var Actor = function(id) {
          var cx =  Math.cos(rot + i) * (size + 1.5) + (x + dx) * App.maskRes ,
              cy =  Math.sin(rot + i) * (size + 1.5) + (y + dy) * App.maskRes ;
         // console.log("check "+cx+" "+cy);
+        cx = Math.round(cx);
+        cy = Math.round(cy);
+
         if(cx >= 0 && cx < App.maskRes && cy >= 0 && cy < App.maskRes) {  // avoid out of bounds
-          if(App.mask[Math.round(cy) * App.maskRes + Math.round(cx)] == 1) {
+          if(App.mask[cy * App.maskRes + cx] == 1) {
             console.log("collide");
             this.die();
           }

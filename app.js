@@ -1,6 +1,8 @@
 var App = {};
 var Field = {};
 
+var DEBUG = false;
+
 App.canvas = document.getElementById('c');
 App.ctx = App.canvas.getContext('2d');
 App.actors = {};
@@ -108,6 +110,17 @@ App.render = function() {
   }
 
   App.drawHighScore();
+
+  // draw mask
+  if(DEBUG) {
+    App.ctx.fillStyle="#0F0";
+    for(var i = 0; i < App.maskRes; i++) {
+      for(var j = 0; j < App.maskRes; j++) {
+        if(App.mask[j* App.maskRes + i])
+          App.ctx.fillRect(App.width - App.maskRes + i, App.height - App.maskRes + j, 1, 1 );
+      }
+    }
+  }
 
   //window.requestAnimationFrame(App.render);
   setTimeout(App.render, 16)

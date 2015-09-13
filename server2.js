@@ -83,7 +83,7 @@ var User = function(ws, id) {
       _user_p_id = Math.max(obj.p_id, _user_p_id);
   //    log_file.write("user is at state ", _user_p_id+"\n");
       obj.from = _id;
-      if(App.state != 0) {
+      if(Match.state != 0) {
         obj.time = Server.updateTime();
       }
       obj.p_id = Server.p_id++;
