@@ -208,7 +208,8 @@ var Match = {
         id: Server.all_user[it].getId(),
         gap: 0,
         next_gap: Math.random() * 2000,
-        p_id: Server.p_id++
+        p_id: Server.p_id++,
+        time: Server.updateTime()
       };
 
       Hist.push(this.actors[it]); // spawn position of actors

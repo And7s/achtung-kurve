@@ -19,11 +19,12 @@ var PROT = [
   },
   // 2: start position of a actor
   {
-    size: 16,
+    size: 20,
     x: 'Float32',
     y: 'Float32',
     rot: 'Float32',
-    id: 'Uint32'
+    id: 'Uint32',
+    time: 'Uint32'
   },
   // 3: single "match will start" flag
   {
