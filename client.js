@@ -115,16 +115,14 @@ var Client = {
         sendDir = -1;
       }
     }
-    if(App.state != 0) {
-      this.appendQueue({
-        type: 1,
-        id: this.id,
-        dir: sendDir,
-        time: App.time,
-        p_id: Client.p_id
-      });
-    }
 
+    this.appendQueue({
+      type: 1,
+      id: this.id,
+      dir: sendDir,
+      time: App.time,
+      p_id: Client.p_id
+    });
 
     //console.log("send ", Client.sendqueue);
     //console.log("length ", Client.sendqueue.byteLength);
@@ -167,4 +165,4 @@ var Client = {
 
 setInterval(function() {
   Client.push()
-}, 15);
+}, 30);
