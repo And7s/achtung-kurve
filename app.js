@@ -149,13 +149,6 @@ App.restartMatch = function() {
   for(var i = 0; i < L; i++) {
     App.mask[i] = 0;
   }
-
-  setTimeout(function() {
-    App.state = 2;
-    for(var it in App.actors) { // awake all actors
-      App.actors[it].live();
-    }
-  }, 2000);
 };
 
 App.setActor = function(obj) {

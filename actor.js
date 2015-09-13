@@ -90,6 +90,8 @@ var Actor = function(id) {
     x = obj.x;
     y = obj.y;
     rot = obj.rot;
+    console.log("respawn and set time to "+App.time);
+    time = App.time;
   };
 
   this.live = function() {

@@ -65,6 +65,15 @@ var Client = {
         Hist.push(obj);
         //console.log(obj);
         App.time = obj.time;
+
+        if(App.state == 1 && App.time >= 2000) {  // erplaced the original settimeout, casue they might be different locally, take server clock
+          App.state = 2;
+          for(var it in App.actors) { // awake all actors
+            App.actors[it].live();
+          }
+        }
+
+
         Client.p_id = Math.max(obj.p_id, Client.p_id);
 
         switch(obj.type) {
