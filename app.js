@@ -64,6 +64,7 @@ App.render = function() {
     var t = Math.round((App.time - 2000) / 100) / 10;
     t = t.toFixed(1);
     text(t, 50, 80, 50, '#fff');
+    text("pid: "+Client.p_id, 250, 80, 20, '#fff');
   }
 
   Pickups.draw();

@@ -1,6 +1,7 @@
 //websocket server
 var fs = require('fs');
 
+var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
 eval(fs.readFileSync('structure.js', 'utf8'));
 var WebSocketServer = require('ws').Server;
 
@@ -63,7 +64,6 @@ var User = function(ws, id) {
     }else { //non binary message, possibly json?
       console.log(message);
     }
-    //_this.push();
   });
 
   var processMessage = function(objs) {
@@ -71,9 +71,9 @@ var User = function(ws, id) {
       var obj = objs[i];
       //console.log("got msg", obj);
 
-      console.log("history has lengt "+Hist.length+" user "+_id+" is at state "+_user_p_id+" server state "+Server.p_id);
+  //    log_file.write("history has lengt "+Hist.length+" user "+_id+" is at state "+_user_p_id+" server state "+Server.p_id+"\n");
       _user_p_id = Math.max(obj.p_id, _user_p_id);
-      //console.log("user is at state ", _user_p_id);
+  //    log_file.write("user is at state ", _user_p_id+"\n");
       obj.from = _id;
       obj.time = Server.updateTime();
       obj.p_id = Server.p_id++;
@@ -120,7 +120,7 @@ var User = function(ws, id) {
     // collect events till this time point, go back in time
     var ab = new Buffer(0);
     var num = Hist[Hist.length - 1].p_id - _user_p_id;
-    console.log("last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
+    //console.log("last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
     //console.log(Hist);
     for(var i = Math.max(Hist.length - num, 0); i < Hist.length; i++) {
       ab = Structure.append(ab, Structure.pack(Hist[i], Hist[i].type));
@@ -132,13 +132,13 @@ var User = function(ws, id) {
   _this.send(Structure.pack({
     id: _id,
     state: Match.state,
-    p_id: 0
+    p_id: Server.p_id++
   }, 0));
 
 
   var _interval = setInterval(function() {
     _this.push();
-  }, 20);
+  }, 15);
 };
 
 function getTime() {

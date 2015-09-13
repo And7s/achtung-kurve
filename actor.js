@@ -49,7 +49,7 @@ var Actor = function(id) {
     if(delta <= 0) {
       return;
     }
-    console.log(id + " delta "+delta+" time "+obj.time+ " "+obj.p_id);
+    //console.log(id + " delta "+delta+" time "+obj.time+ " "+obj.p_id);
 
 
     // apply what happened in the past in 10ms intervals

@@ -32,7 +32,7 @@ var Client = {
     ws.onclose = function(e) {
       that.active = false;
 
-      console.log("Connection lost to server", e);;
+      console.log("Connection lost to server", e);
       clearTimeout(that.timeout);
       that.timeout = setTimeout(function() {
         that.initialize();
@@ -51,13 +51,13 @@ var Client = {
       //console.log("message", objs);
       for(var i = 0; i < objs.length; i++) {
         var obj = objs[i];
-        console.log("mypid "+Client.p_id+" vs "+obj.p_id);
-        if(Client.p_id == obj.p_id) return; // already allied this change
+        //console.log("mypid "+Client.p_id+" vs "+obj.p_id);
+        if(Client.p_id == obj.p_id) continue; // already allied this change
         if(Client.p_id > obj.p_id) {  // client already has this patch applied
           //console.log("error wrong pids");
-          console.log(obj);
+          //console.log(obj);
           //debugger;
-          return;
+          continue;
         }
         if(Client.p_id != obj.p_id -1) {
           //debugger;
@@ -102,9 +102,10 @@ var Client = {
   },
 
   push: function() {  // send data with timestamp to the client inform him abut what has changed
+    //console.log("try send");
     if(ws.readyState !== 1 || this.id === null) return;
 
-
+    //console.log("continue");
     var sendDir = 0;
     // no pause
     if(App.state == 2) {
@@ -125,8 +126,8 @@ var Client = {
     }
 
 
-    console.log("send ", Client.sendqueue);
-    console.log("length ", Client.sendqueue.byteLength);
+    //console.log("send ", Client.sendqueue);
+    //console.log("length ", Client.sendqueue.byteLength);
     if(Client.sendqueue.byteLength > 0)
       ws.send(Client.sendqueue);
     Client.sendqueue = new ArrayBuffer(0);
@@ -166,4 +167,4 @@ var Client = {
 
 setInterval(function() {
   Client.push()
-}, 20);
+}, 15);
