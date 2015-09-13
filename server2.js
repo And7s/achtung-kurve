@@ -12,6 +12,13 @@ var Server = {
   time: getTime(), // reference time, when server did start
   now: 0, // time the match is running
   p_id: 1,
+  stats: {
+    c_in: 0,
+    c_out: 0,
+    t_in: 0,
+    t_out: 0,
+    last_time: getTime()
+  },
 
   updateTime: function() {
     Server.now = (getTime() - Server.time);
@@ -57,9 +64,10 @@ var User = function(ws, id) {
   });
 
   _ws.on('message', function(message, flags) {
+    Server.stats.c_in++;
     _last_msg = getTime();
-    //process.stdout.write("m");
     if(flags.binary) {
+      Server.stats.t_in += message.length;
       Structure.parse(message, processMessage);
     }else { //non binary message, possibly json?
       console.log(message);
@@ -111,6 +119,8 @@ var User = function(ws, id) {
   this.send = function(obj) {
     try {
       _ws.send(obj);
+      Server.stats.c_out++;
+      Server.stats.t_out += obj.length;
     }catch(e) {
       console.log("error",e);
     }
@@ -120,13 +130,15 @@ var User = function(ws, id) {
     // collect events till this time point, go back in time
     var ab = new Buffer(0);
     var num = Hist[Hist.length - 1].p_id - _user_p_id;
-    //console.log("last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
+    console.log("last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
     //console.log(Hist);
     for(var i = Math.max(Hist.length - num, 0); i < Hist.length; i++) {
       ab = Structure.append(ab, Structure.pack(Hist[i], Hist[i].type));
     }
     _this.send(ab);
+
   };
+
 
   // welcome the user
   _this.send(Structure.pack({
@@ -138,7 +150,7 @@ var User = function(ws, id) {
 
   var _interval = setInterval(function() {
     _this.push();
-  }, 15);
+  }, 50);
 };
 
 function getTime() {
@@ -166,7 +178,7 @@ var Match = {
     Match.next_pickup = 2000 + Math.random() * 4000;
 
     var num_users = Object.keys(Server.all_user).length;
-    console.log("num user", num_users);
+    //console.log("num user", num_users);
     var count = Math.random() * num_users;  // rotation where to start
 
     for(var it in Server.all_user) {
@@ -199,7 +211,7 @@ var Match = {
 
       Hist.push(this.actors[it]); // spawn position of actors
     }
-    console.log(this.actors);
+    //console.log(this.actors);
 
     setTimeout(function() {
       Match.state = 2;
@@ -222,7 +234,7 @@ var Match = {
     }
     // pickups
     if(Match.next_pickup <= Server.now && Match.state != 0) {
-      console.log("new pickup");
+      //console.log("new pickup");
       Hist.push({
         type: 4,
         p_id: Server.p_id++,
@@ -241,3 +253,18 @@ var Match = {
 setInterval(function() {
   Match.update()
 }, 66);
+
+setInterval(function() {
+  console.log("Network stats:");
+  console.log("====");
+  console.log("Cin "+Server.stats.c_in+" Cout: "+Server.stats.c_out);
+  console.log("traffic in: "+ Server.stats.t_in+" out "+ Server.stats.t_out);
+
+   Server.stats = {
+    c_in: 0,
+    c_out: 0,
+    t_in: 0,
+    t_out: 0,
+    last_time: getTime()
+  };
+}, 999)
