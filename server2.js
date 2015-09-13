@@ -13,7 +13,7 @@ var Server = {
   p_id: 1,
 
   updateTime: function() {
-    Server.now = getTime() - Server.time;
+    Server.now = (getTime() - Server.time) / 2;
     return Server.now;
   },
   broadcast: function (ab, exclude) { // broadcast to anyone, but the sender
@@ -82,6 +82,13 @@ var User = function(ws, id) {
           obj.gap = Match.actors[_id].gap;
           obj.next_gap = Match.actors[_id].next_gap;
           break;
+        case 6:
+          Match.state = 0;  // pause
+          setTimeout(function() {
+            Match.restart();
+          }, 5000);
+          break;
+
       }
 
       Hist.push(obj);
@@ -233,4 +240,4 @@ var Match = {
 
 setInterval(function() {
   Match.update()
-}, 33);
+}, 66);

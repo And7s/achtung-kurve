@@ -53,7 +53,7 @@ var Actor = function(id) {
 
 
     // apply what happened in the past in 10ms intervals
-    var num = Math.floor(delta / 10);
+    var num = Math.ceil(delta / 10);
     for(var i = 0; i < num; i++) {
       var delta_ref = delta / num / 32;   // reference time relative to 32ms
       // console.log("delta ref is ", delta_ref);

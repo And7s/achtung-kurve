@@ -60,7 +60,7 @@ var Client = {
           return;
         }
         if(Client.p_id != obj.p_id -1) {
-          debugger;
+          //debugger;
         }
         Hist.push(obj);
         //console.log(obj);
@@ -114,38 +114,52 @@ var Client = {
         sendDir = -1;
       }
     }
-
-
-    Client.sendqueue =
-      Structure.pack({
+    if(App.state != 0) {
+      this.appendQueue({
+        type: 1,
         id: this.id,
         dir: sendDir,
         time: App.time,
         p_id: Client.p_id
-      }, 1),
+      });
+    }
 
 
-    ws.send(Client.sendqueue);
-    //Client.sendqueue = new ArrayBuffer(0);
+    console.log("send ", Client.sendqueue);
+    console.log("length ", Client.sendqueue.byteLength);
+    if(Client.sendqueue.byteLength > 0)
+      ws.send(Client.sendqueue);
+    Client.sendqueue = new ArrayBuffer(0);
   },
 
   getId: function() {
     return this.id;
   },
 
-  sendPickup: function(type) {
-    if(ws.readyState !== 1) return;
+  appendQueue: function(obj) {
+    Client.sendqueue = Structure.append(
+      Client.sendqueue,
+      Structure.pack(obj, obj.type)
+    );
+  },
 
-    ws.send(Structure.pack({
+  sendPickup: function(type) {
+    this.appendQueue({
+      type: 5,
+      p_id: Client.p_id,
+      time: App.time,
       id: this.id,
       num: type
-    }, 5));
+    });
   },
 
   sendEnd: function(id) {
-    ws.send(Structure.pack({
+    this.appendQueue({
+      type: 6,
+      p_id: Client.p_id,
+      time: App.time,
       id: id
-    }, 6));
+    });
   }
 };
 

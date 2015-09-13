@@ -38,16 +38,18 @@ var PROT = [
     num: 'Uint8',
     time: 'Uint32'
   },
-  // 5: collect a size
+  // 5: collect a pickup
   {
-    size: 5,
+    size: 9,
     id: 'Uint32',
-    num: 'Uint8'
+    num: 'Uint8',
+    time: 'Uint32'
   },
   // 6: score a point
   {
-    size: 4,
-    id: 'Uint32'
+    size: 8,
+    id: 'Uint32',
+    time: 'Uint32'
   }
 
 
