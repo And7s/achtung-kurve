@@ -120,7 +120,7 @@ var Actor = function(id) {
         dy = Math.sin(rot) * speed * dt;
 
     // i iterate over the forwards angles
-    for(var i = -Math.PI / 2; i <= Math.PI /2; i+= Math.PI / 10) {
+    for(var i = -Math.PI; i <= Math.PI; i+= Math.PI / 10) {
 
       // i set the mask at the inner bounds, the actual size
       var sx =  Math.cos(rot + i) * size + x * App.maskRes ,
@@ -128,15 +128,22 @@ var Actor = function(id) {
 
        //console.log("set "+sx+" "+sy+" "+ Math.round(sx)+" "+Math.round(sy));
       // dont check the outer angels, causes false in at rotating
-      if(i > -Math.PI / 2.1 && i < Math.PI / 2.1) {
+      if(i > -Math.PI / 2.1 && i < Math.PI / 2.1) { // check forwards half
         // this calculates where the pixels whould be drawn ont he reference resolution
         // i will check one pixel more than the radius itself
         // add 1.5 more, so it wont get round in the wrong direction twice(negelcted)
-         var cx =  Math.cos(rot + i) * (size + 1.5) + (x + dx) * App.maskRes ,
-             cy =  Math.sin(rot + i) * (size + 1.5) + (y + dy) * App.maskRes ;
+
+         var cx =  Math.cos(rot + i) * (size + 1.5) + (x + dx / dt) * App.maskRes ,
+             cy =  Math.sin(rot + i) * (size + 1.5) + (y + dy / dt) * App.maskRes ;
         // console.log("check "+cx+" "+cy);
         cx = Math.round(cx);
         cy = Math.round(cy);
+
+
+        if(DEBUG) {
+          App.ctx.fillRect(App.width - App.maskRes + cx, App.height - App.maskRes + cy, 1, 1 );
+        }
+
 
         if(cx >= 0 && cx < App.maskRes && cy >= 0 && cy < App.maskRes) {  // avoid out of bounds
           if(App.mask[cy * App.maskRes + cx] == 1) {
@@ -144,11 +151,12 @@ var Actor = function(id) {
             this.die();
           }
         }
-      }
-      // set the mask, where someone has been
-      // if there is no gapp currently
-      if(this.gap == 0 || this.gap < App.time) {
-        App.mask[Math.round(sy) * App.maskRes + Math.round(sx)] = 1;
+      }else if( i < -Math.PI / 2 || i > Math.PI / 2) {  // set behind
+        // set the mask, where someone has been
+        // if there is no gapp currently
+        if(this.gap == 0 || this.gap < App.time) {
+          App.mask[Math.round(sy) * App.maskRes + Math.round(sx)] = 1;
+        }
       }
     }
 

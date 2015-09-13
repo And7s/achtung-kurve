@@ -111,7 +111,9 @@ var Client = {
       }
     }
   },
-
+/*tunnel: function(o) {
+this.processMessage([o]);
+},*/
   push: function() {  // send data with timestamp to the client inform him abut what has changed
     //console.log("try send");
     if(ws.readyState !== 1 || this.id === null) return;
@@ -177,3 +179,9 @@ var Client = {
 setInterval(function() {
   Client.push()
 }, 15);
+
+/*
+var E_COUNT = 0;
+setInterval(function() {
+  Client.tunnel(HIST[E_COUNT++]);
+}, 5);*/

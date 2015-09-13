@@ -19,6 +19,7 @@ var Server = {
     t_out: 0,
     last_time: getTime()
   },
+  pending_timeouts: {},
 
   updateTime: function() {
     Server.now = (getTime() - Server.time);
@@ -98,9 +99,11 @@ var User = function(ws, id) {
         break;
         case 6:
           Match.state = 0;  // pause
-          setTimeout(function() {
+          var t = setTimeout(function() {
+            delete Server.pending_timeouts[t];
             Match.restart();
           }, 5000);
+          Server.pending_timeouts[t] = true;
           break;
 
       }
@@ -138,6 +141,7 @@ var User = function(ws, id) {
     var num = Hist[Hist.length - 1].p_id - _user_p_id;
     console.log(_id+" last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
     //console.log(Hist);
+
     for(var i = Math.max(Hist.length - num, 0); i < Hist.length; i++) {
       ab = Structure.append(ab, Structure.pack(Hist[i], Hist[i].type));
     }
@@ -174,6 +178,13 @@ var Match = {
     Server.time = getTime();
     Match.state = 1;  // awakening
     Hist = [];
+
+    // clear all peding timeouts
+    for(var it in Server.pending_timeouts) {
+      clearTimeout(it);
+      delete Server.pending_timeouts[t];
+      debugger;
+    }
 
     Hist.push({
       type: 3,
@@ -275,11 +286,13 @@ setInterval(function() {
 
 
 var handlePickup = function(obj) {
-  setTimeout(function() {
+  var t = setTimeout(function() {
+    delete Server.pending_timeouts[t];
     console.log("append revert");
     obj.type = 7; // diseffect
     obj.time = Server.updateTime();
     obj.p_id = Server.p_id++;
     Hist.push(obj);
   }, 2000);
+  Server.pending_timeouts[t] = true;
 }

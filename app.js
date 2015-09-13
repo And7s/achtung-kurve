@@ -116,8 +116,9 @@ App.render = function() {
     App.ctx.fillStyle="#0F0";
     for(var i = 0; i < App.maskRes; i++) {
       for(var j = 0; j < App.maskRes; j++) {
-        if(App.mask[j* App.maskRes + i])
+        if(App.mask[j* App.maskRes + i]) {
           App.ctx.fillRect(App.width - App.maskRes + i, App.height - App.maskRes + j, 1, 1 );
+        }
       }
     }
   }
