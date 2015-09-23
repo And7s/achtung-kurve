@@ -154,13 +154,14 @@ var User = function(ws, id) {
   _this.send(Structure.pack({
     id: _id,
     state: Match.state,
-    p_id: Server.p_id++
+    p_id: Server.p_id++,
+    time: Server.updateTime()
   }, 0));
 
 
   var _interval = setInterval(function() {
     _this.push();
-  }, 50);
+  }, 15);
 };
 
 function getTime() {

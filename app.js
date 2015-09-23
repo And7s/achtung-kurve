@@ -68,7 +68,7 @@ App.render = function() {
     text(t, 50, 80, 50, '#fff');
     text("pid: "+Client.p_id, 250, 80, 20, '#fff');
   }
-
+  Client.update();
   Pickups.draw();
 
   App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
@@ -128,13 +128,10 @@ App.render = function() {
 };
 
 App.dispatchEvent = function(obj) {
-
   //App.time = obj.time;
   for(var it in App.actors) {
     App.actors[it].dispatchEvent(obj);
   }
-
-
 };
 
 App.restartMatch = function() {
@@ -236,45 +233,3 @@ function loadImages(sources, callback) {
 }
 
 $(loadImages(['power.png'], App.init));
-
-
-
-
-var Touch = function() {
-
-
-  document.body.addEventListener('touchstart', function(e){
-    handleStart(e);
-  }, false);
-
-  document.body.addEventListener('touchmove', function(e){
-    handleStart(e);
-  }, false);
-
-  document.body.addEventListener('touchend', function(e){
-      handleEnd(e);
-  }, false);
-
-  document.body.addEventListener('touchleave', function(e){
-      handleEnd(e);
-  }, false);
-  document.body.addEventListener('touchcancel', function(e){
-      handleEnd(e);
-  }, false);
-
-
-  var handleStart = function(e) {
-    console.log("start", e.touches[0].clientX);
-    var pos = e.touches[0].clientX;
-    var key = (pos / App.width) > 0.5 ? 39 : 37;
-    Key.simulate(key);
-    // 39 // 37
-  };
-
-  var handleEnd = function(e) {
-    console.log("end", e);
-    Key.reset(39);
-    Key.reset(37);
-  };
-
-};

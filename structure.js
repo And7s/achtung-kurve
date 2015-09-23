@@ -4,9 +4,10 @@
 var PROT = [
   // 0: who am I
   {
-   size: 5,
+   size: 9,
    id: 'Uint32',
-   state: 'Uint8'
+   state: 'Uint8',
+   time: 'Uint32'
   },
   // 1: who presses key in which direction
   {
