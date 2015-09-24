@@ -57,13 +57,10 @@ var Client = {
       if(this.messagebuffer.length > 0) {
        processMessage(this.messagebuffer);
      }
-     console.log("RECVD ", objs.length);
+
       this.messagebuffer = objs;
-
       this.buffertime = getTime();
-
       this.apply_time = objs[objs.length - 1].time - this.bufferdelay;
-      console.log("set apply time to "+this.apply_time);
     };
 
     // updates the client, applies the latest changes
@@ -73,16 +70,13 @@ var Client = {
       this.buffertime = getTime();
 
       this.apply_time += delta; // i whould take messages till this point (doesnt mean there are messages till this point)
-      //console.log("apply till "+this.apply_time );
-      //console.log("apply in update delta "+delta+" "+this.apply_time);
       for(var i = 0; i < this.messagebuffer.length; i++) {
         if(this.messagebuffer[i].time <= this.apply_time) {
 
           processMessage([this.messagebuffer[i]]);  // apply this message
           this.messagebuffer.shift(); // remove element
           i--;
-        }else {
-          console.log("reject msg "+i+" behind "+(this.messagebuffer[this.messagebuffer.length - 1].time - this.messagebuffer[i].time));
+        } else {
           return;
         }
       }
@@ -97,17 +91,12 @@ var Client = {
 
         if(Client.p_id == obj.p_id) continue; // already allied this change
         if(Client.p_id > obj.p_id) {  // client already has this patch applied
-          console.log("error wrong pids");
-          console.log(obj);
-          //debugger;
           continue;
         }
         if(Client.p_id != obj.p_id -1) {
           //debugger;
         }
         Hist.push(obj);
-        //console.log(obj);
-//        console.log("apply message id "+obj.p_id+" has time "+obj.time+" delta is "+(obj.time - App.time)+" now: "+App.time);
         App.time = obj.time;
 
         if(App.state == 1 && App.time >= 2000) {  // erplaced the original settimeout, casue they might be different locally, take server clock

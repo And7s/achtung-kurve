@@ -13,6 +13,7 @@ App.init = function(images) {
   App.maskRes = 500;
   App.state = 0;  // 0: before game, 1: awaking, 2: playing
   App.last_win = -1;
+  Menu.init();
   App.resize();
   Key = new Key();
   Touch = new Touch();
@@ -25,16 +26,17 @@ App.init = function(images) {
 };
 
 App.resize = function() {
-  var w = $(window).width(),
-      h = $(window).height();
 
-  App.width = w;
-  App.height = h;
+  // this game takes a sqauared playfield and 1/4th menu
+  var size = Math.min($(window).width() * 0.75, $(window).height());
 
-  Field.size = Math.min(w, h) - 10;
+  App.width = size;
+  App.height = size;
 
-  App.canvas.width = w;
-  App.canvas.height = h;
+  Field.size = size - 15;
+
+  App.canvas.width = size;
+  App.canvas.height = size;
   App.scale = Field.size / App.maskRes;  // everything gets scaled according to this
 
   Field.canvas = document.createElement('canvas');
@@ -42,8 +44,10 @@ App.resize = function() {
   Field.canvas.height = Field.size;
   Field.ctx = Field.canvas.getContext('2d');
 
-  Field.offset_x = 5,
-  Field.offset_y = (h - Field.size) / 2;
+  Field.offset_x = 7,
+  Field.offset_y = (size - Field.size) / 2;
+
+  Menu.resize();
 };
 
 
@@ -56,18 +60,11 @@ App.render = function() {
     }
   }
 
-
+  Menu.render();
 
   // clear
   App.ctx.clearRect(0, 0, App.width, App.height);
 
-  // time
-  if(App.time != null) {
-    var t = Math.round((App.time - 2000) / 100) / 10;
-    t = t.toFixed(1);
-    text(t, 50, 80, 50, '#fff');
-    text("pid: "+Client.p_id, 250, 80, 20, '#fff');
-  }
   Client.update();
   Pickups.draw();
 
@@ -108,8 +105,6 @@ App.render = function() {
     App.ctx.fill();
     App.ctx.closePath();
   }
-
-  App.drawHighScore();
 
   // draw mask
   if(DEBUG) {
@@ -159,19 +154,6 @@ App.setActor = function(obj) {
 };
 
 
-App.drawHighScore = function() {
-  var c = 1;
-  for(var it in App.actors) {
-    text(NAMES[it % NAMES.length], App.width - 200, 50 * c, 30, COLORS[it % COLORS.length]);
-    text(App.scores[it] ||0, App.width - 50, 50 * c, 30, COLORS[it % COLORS.length]);
-    c++;
-  }
-
-  if(App.state == 0 && App.last_win >= 0) {
-    text(NAMES[App.last_win % NAMES.length] + " wins!", Field.size / 2, Field.size / 2, 40, '#FFF');
-  }
-}
-
 
 var COLORS = [
   '#f00',
@@ -194,15 +176,14 @@ var NAMES = [
   'Pinky'
 ];
 
-function text(text, x,y, size, color) {
-
+function text(text, x,y, size, color, ctx) {
+  ctx = ctx || App.ctx;
   size = size || 16;
   color = color || '#AAA';
-  App.ctx.fillStyle = color;
-  //ctx.font = 'thin 16px Arial serif';
-  App.ctx.font = '400 '+size+"px Open Sans";
-  App.ctx.textBaseline = 'bottom';
-  App.ctx.fillText(text, x, y);
+  ctx.fillStyle = color;
+  ctx.font = '400 '+size+"px Open Sans";
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(text, x, y);
 
 }
 

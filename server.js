@@ -183,7 +183,7 @@ var Match = {
     // clear all peding timeouts
     for(var it in Server.pending_timeouts) {
       clearTimeout(it);
-      delete Server.pending_timeouts[t];
+      delete Server.pending_timeouts[it];
       debugger;
     }
 
