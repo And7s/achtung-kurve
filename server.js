@@ -193,7 +193,7 @@ var Match = {
       p_id: Server.p_id++
     }); // start a new game
 
-    Match.next_pickup = 2000 + Math.random() * 4000;
+    Match.next_pickup = Math.random()* 200;//2000 + Math.random() * 4000;
 
     var num_users = Object.keys(Server.all_user).length;
     //console.log("num user", num_users);

@@ -9,9 +9,13 @@ var Menu = {
     var size = Math.min($(window).width() * 0.25, $(window).height());
     this.width = size;
     this.height = $(window).height();
-    this.canvas.width = this.width;
-    this.canvas.height = this.height;
+    this.canvas.width = this.width * App.pixelratio;
+    this.canvas.height = this.height * App.pixelratio;
 
+    this.canvas.style.height = this.height + 'px';
+    this.canvas.style.width = this.width + 'px';
+
+    this.ctx.scale(App.pixelratio, App.pixelratio);
   },
 
   render: function() {

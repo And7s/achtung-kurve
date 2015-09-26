@@ -1,10 +1,12 @@
-var App = {};
+var App = {
+  pixelratio : 1.5 // better rendering quality, but also more computation needed
+};
 var Field = {};
 
 var DEBUG = false;
 
 App.canvas = document.getElementById('c');
-App.ctx = App.canvas.getContext('2d');
+
 App.actors = {};
 App.scores = {};
 
@@ -18,7 +20,7 @@ App.init = function(images) {
   Key = new Key();
   Touch = new Touch();
   Client.initialize();
-  App.img = images[0];
+  App.img_pickup = images[0];
 
   App.mask = new Uint8Array(App.maskRes * App.maskRes);
   window.requestAnimationFrame(App.render);
@@ -35,15 +37,22 @@ App.resize = function() {
 
   Field.size = size - 15;
 
-  App.canvas.width = size;
-  App.canvas.height = size;
+  App.canvas.width = size * App.pixelratio;
+  App.canvas.height = size * App.pixelratio;
+  App.canvas.style.width = size + 'px';
+  App.canvas.style.height = size + 'px';
+  App.ctx = App.canvas.getContext('2d');
+  App.ctx.scale(App.pixelratio, App.pixelratio);
+
   App.scale = Field.size / App.maskRes;  // everything gets scaled according to this
 
   Field.canvas = document.createElement('canvas');
-  Field.canvas.width = Field.size;  // needs to be set bot for canvas as well as ctx
+  Field.canvas.width = Field.size ;  // needs to be set bot for canvas as well as ctx
   Field.canvas.height = Field.size;
-  Field.ctx = Field.canvas.getContext('2d');
 
+
+  Field.ctx = Field.canvas.getContext('2d');
+ // Field.ctx.scale(App.pixelratio, App.pixelratio *2);
   Field.offset_x = 7,
   Field.offset_y = (size - Field.size) / 2;
 
@@ -60,13 +69,15 @@ App.render = function() {
     }
   }
 
+
   Menu.render();
 
   // clear
   App.ctx.clearRect(0, 0, App.width, App.height);
 
   Client.update();
-  Pickups.draw();
+  Pickups.draw(16);
+  Particles.render(16);
 
   App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
 
@@ -213,4 +224,4 @@ function loadImages(sources, callback) {
   }
 }
 
-$(loadImages(['power.png'], App.init));
+$(loadImages(['pickups/together2.png' ], App.init));

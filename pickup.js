@@ -1,7 +1,8 @@
 
 var Pickups = {
   arr: [],
-  size: 1 / 1.5,
+  size: 0.5,  // at which factor the pickups are scaled
+  real_size: 50, // the size of the images in px
 
   collide: function(x, y) {
     var sizeSq = Math.pow(39 / App.maskRes * this.size, 2);
@@ -19,18 +20,40 @@ var Pickups = {
     return false; // no collision
   },
 
-  draw: function() {
+  draw: function(dt) {
     for(var i = 0; i < this.arr.length; i++) {
+      var obj = this.arr[i];
+      var scale = this.real_size * App.scale * this.size; // = 1
+      if(obj.state == 0) {  // spawning
+        obj.time += dt;
+        if(obj.time >= 1000) {
+          obj.state = 1;
+        }else {
+          scale *= Ease.easeOutBack(obj.time, 0, 1, 1000);
+        }
+      }else if( obj.state == 1) { // alive
+
+      }
+
+      App.ctx.fillStyle = '#00FF00';
+      App.ctx.beginPath();
+      App.ctx.arc(
+        this.arr[i].x * Field.size + Field.offset_x,
+        this.arr[i].y * Field.size + Field.offset_y,
+        scale/1.8, 0, 2 * Math.PI
+      );
+      App.ctx.fill();
+
       App.ctx.drawImage(
-        App.img,
-        this.arr[i].type * 39,
+        App.img_pickup,
+        this.real_size * obj.type,
         0,
-        39,
-        39,
-        this.arr[i].x * Field.size - 20 * App.scale * this.size + Field.offset_x,
-        this.arr[i].y * Field.size - 20 * App.scale * this.size + Field.offset_y,
-        39 * App.scale * this.size,
-        39 * App.scale * this.size
+        this.real_size,
+        this.real_size,
+        this.arr[i].x * Field.size - 0.5 * scale + Field.offset_x,
+        this.arr[i].y * Field.size - 0.5 * scale + Field.offset_y,
+        scale,
+        scale
       );
     }
   },
@@ -40,7 +63,9 @@ var Pickups = {
     this.arr.push({
       x: x,
       y: y,
-      type: type
+      type: type,
+      state: 0,  // state: 0 spawgning state, 1: normal, 2: picked up
+      time: 0
     });
   },
 
@@ -132,3 +157,12 @@ var Pickups = {
     }
   }
 };
+
+
+// syntax t=currenttime, b=startval, c=endval, d = totaltime
+var Ease = {
+  easeOutBack: function (t, b, c, d, s) {
+    if (s == undefined) s = 1.70158;
+    return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
+  },
+}

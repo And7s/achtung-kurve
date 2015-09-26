@@ -67,6 +67,7 @@ var Actor = function(id) {
   this.die = function() {
     if(state == 2) return;  // you are already dead
     state = 2;
+    Particles.add(x, y);
     // how many are remaining, am i the last person?
     var rem = 0, last_id = 0;
     for(var it in App.actors) {
