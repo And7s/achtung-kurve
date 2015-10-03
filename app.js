@@ -97,19 +97,20 @@ App.render = function() {
 
 
   // draw head
-  var size = 3;
-  if(App.state == 1) {
-    size += Math.sin(App.time / 100) * 2 + 1;
-  }
 
+  var size = 3;
+  App.ctx.fillStyle="#FFFFFF";
   for(var it in App.actors) {
-    if(it == Client.getId())
-    App.ctx.fillStyle="#FFFFFF";
+   if(App.state == 1) {
+      if(it == Client.getId()) {
+        size = Ease.spawningSelf(App.time, 3, 9, 2000);
+      }
+    }
     App.ctx.beginPath();
     App.ctx.arc(
       App.actors[it].getX() * Field.size + Field.offset_x,
       App.actors[it].getY() * Field.size + Field.offset_y,
-      size * App.scale * (it == Client.getId() && App.state == 1 ? 3:1),
+      size * App.scale,
       0,
       2 * Math.PI
     );
@@ -141,19 +142,23 @@ App.dispatchEvent = function(obj) {
 };
 
 App.restartMatch = function() {
-  Field.ctx.clearRect(0, 0, Field.size, Field.size);  // clear context
-  Field.trans = false;
 
+  Field.trans = false;
   App.actors = {};
   Pickups.arr = [];
   App.state = 1;
+  App.clearField();
 
+};
+
+App.clearField = function() {
+  Field.ctx.clearRect(0, 0, Field.size, Field.size);  // clear context
   // reset mask
   var L = App.maskRes * App.maskRes;
   for(var i = 0; i < L; i++) {
     App.mask[i] = 0;
   }
-};
+}
 
 App.setActor = function(obj) {
   if(!App.actors[obj.id]) {
@@ -224,4 +229,4 @@ function loadImages(sources, callback) {
   }
 }
 
-$(loadImages(['pickups/together2.png' ], App.init));
+$(loadImages(['together2.png' ], App.init));

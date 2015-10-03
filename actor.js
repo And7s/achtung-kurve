@@ -8,7 +8,13 @@ var Actor = function(id) {
       state = 2,  // 0: waiting (before game start), 1: playing, 2: dead
       invert = false,
       time = 0,
-      dir = 0;  // which side is pressed
+      dir = 0,  // which side is pressed
+      deg_90 = false, // if 90 deg active
+      last_dir = null,  // which directin was pressed the last time
+      invisible = false,  // if player is invisible
+      no_control = false,
+      invincible = false;
+
 
   this.gap = 0,
   this.next_gap = 0;
@@ -52,7 +58,11 @@ var Actor = function(id) {
       var delta_ref = delta / num / 32;   // reference time relative to 32ms
       // console.log("delta ref is ", delta_ref);
       if(this.isAlive()) {
-        this.rotate(dir, delta_ref);
+        if(deg_90 && !no_control) {
+          this.rotate90(dir)
+        }else if (!no_control) {
+          this.rotate(dir, delta_ref);
+        }
         this.update(delta_ref);
         this.draw();
       }
@@ -91,12 +101,19 @@ var Actor = function(id) {
     x = obj.x;
     y = obj.y;
     rot = obj.rot;
+    invisible = true;
+    invincible = true;
+    no_control = false;
+    invert = false;
+    deg_90 = false;
     console.log("respawn and set time to "+App.time);
     time = App.time;
   };
 
   this.live = function() {
     state = 1;
+    invisible = false;
+    invincible = false;
     speed = 0.005;
   };
 
@@ -149,13 +166,15 @@ var Actor = function(id) {
         if(cx >= 0 && cx < App.maskRes && cy >= 0 && cy < App.maskRes) {  // avoid out of bounds
           if(App.mask[cy * App.maskRes + cx] == 1) {
             console.log("collide");
-            this.die();
+            if(!invincible) {
+              this.die();
+            }
           }
         }
       }else if( i < -Math.PI / 2 || i > Math.PI / 2) {  // set behind
         // set the mask, where someone has been
         // if there is no gapp currently
-        if(this.gap == 0 || this.gap < App.time) {
+        if((this.gap == 0 || this.gap < App.time) && !invisible) {
           App.mask[Math.round(sy) * App.maskRes + Math.round(sx)] = 1;
         }
       }
@@ -182,8 +201,15 @@ var Actor = function(id) {
     rot += dir * dt * 0.09;
   };
 
+  this.rotate90 = function(dir) {
+    if(dir == last_dir) return; // only recognize new events
+    last_dir = dir;
+    if(invert) dir = -dir;
+    rot += Math.PI / 2 * dir;
+  };
+
   this.draw = function() {
-    if(this.gap > 0 && this.gap > App.time) {
+    if(invisible || (this.gap > 0 && this.gap > App.time)) {
 
     }else {
       Field.ctx.fillStyle = COLORS[id % COLORS.length];
@@ -193,4 +219,20 @@ var Actor = function(id) {
     }
   };
 
+  this.set90Deg = function(bool) {
+    deg_90 = bool;
+    last_dir = dir;
+  };
+
+  this.setInvisible = function(bool) {
+    invisible = bool;
+  };
+
+  this.setNoControl = function(bool) {
+    no_control = bool;
+  };
+
+  this.setInvincible = function(bool) {
+    invincible = bool;
+  };
 };

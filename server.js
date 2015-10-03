@@ -259,7 +259,8 @@ var Match = {
         time: Server.now,
         x: Math.random(),
         y: Math.random(),
-        num: Math.floor(Math.random() * 9)
+        num: Math.floor(Math.random() * 6),
+        apply: Math.floor(Math.random() * 3)
       });
       Match.next_pickup = Server.now + Math.random() * 5000;
     }

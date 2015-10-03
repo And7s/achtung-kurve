@@ -34,17 +34,19 @@ var PROT = [
   },
   // 4: add a new pickup (pickup spawn)
   {
-    size: 13,
+    size: 14,
     x: 'Float32',
     y: 'Float32',
     num: 'Uint8',
+    apply: 'Uint8',
     time: 'Uint32'
   },
   // 5: collect a pickup
   {
-    size: 9,
+    size: 10,
     id: 'Uint32',
     num: 'Uint8',
+    apply: 'Uint8',
     time: 'Uint32'
   },
   // 6: score a point
@@ -55,9 +57,10 @@ var PROT = [
   },
   // 7: diseffect (reverts 5)
   {
-    size: 9,
+    size: 10,
     id: 'Uint32',
     num: 'Uint8',
+    apply: 'Uint8',
     time: 'Uint32'
   }
 

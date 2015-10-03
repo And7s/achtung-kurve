@@ -127,10 +127,10 @@ var Client = {
         case 4:
           console.log("add pickup in client");
           console.log(obj);
-          Pickups.add(obj.num, obj.x, obj.y);
+          Pickups.add(obj.num, obj.apply, obj.x, obj.y);
           break;
         case 5:
-          Pickups.effect(obj.id, obj.num);
+          Pickups.effect(obj.id, obj.num, obj.apply);
           break;
         case 6:
           App.scores[obj.id] = App.scores[obj.id] + 1 || 1;
@@ -138,7 +138,7 @@ var Client = {
           App.last_win = obj.id;
           break;
         case 7: // invert pickup
-          Pickups.disEffect(obj.id, obj.num);
+          Pickups.disEffect(obj.id, obj.num, obj.apply);
           break;
         }
       }
