@@ -98,22 +98,43 @@ App.render = function() {
 
   // draw head
 
-  var size = 3;
-  App.ctx.fillStyle="#FFFFFF";
+
+ 
   for(var it in App.actors) {
+    // which color should you be drawn
+    var color = '#FFF'; // default color
+    var size = 3;
+    if (App.actors[it].getInvert())  { color = '#00F'; size++; }
+    if (App.actors[it].getInvincible()) { color = '#0F0';  size++; }
+    if (App.actors[it].getNoControl()) { color = '#F00';  size++; }
+
+    App.ctx.fillStyle = color;
    if(App.state == 1) {
       if(it == Client.getId()) {
         size = Ease.spawningSelf(App.time, 3, 9, 2000);
       }
     }
     App.ctx.beginPath();
-    App.ctx.arc(
-      App.actors[it].getX() * Field.size + Field.offset_x,
-      App.actors[it].getY() * Field.size + Field.offset_y,
-      size * App.scale,
-      0,
-      2 * Math.PI
-    );
+    if (!App.actors[it].get90Deg()) {
+      App.ctx.arc(
+        App.actors[it].getX() * Field.size + Field.offset_x,
+        App.actors[it].getY() * Field.size + Field.offset_y,
+        size * App.scale,
+        0,
+        2 * Math.PI
+      );
+    } else {
+      size += 2;
+      App.ctx.fillRect(
+        App.actors[it].getX() * Field.size + Field.offset_x - size * App.scale / 2,
+        App.actors[it].getY() * Field.size + Field.offset_y - size * App.scale / 2,
+        size * App.scale,
+        size * App.scale
+      );
+    }
+
+
+
     App.ctx.fill();
     App.ctx.closePath();
   }

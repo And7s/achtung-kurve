@@ -186,13 +186,14 @@ var Client = {
     );
   },
 
-  sendPickup: function(type) {
+  sendPickup: function(obj) {
     this.appendQueue({
       type: 5,
       p_id: Client.p_id,
       time: App.time,
       id: this.id,
-      num: type
+      num: obj.type,
+      apply: obj.apply
     });
   },
 

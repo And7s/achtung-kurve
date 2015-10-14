@@ -11,10 +11,10 @@ var Pickups = {
       if(obj.state == 2) continue;  // already collected
 
       var distSq = (obj.x - x) * (obj.x - x) + (obj.y - y) * (obj.y - y);
-      if(distSq < sizeSq) {
-        obj.state = 2;
-        obj.time = 0;
-        return obj.type;
+      if(distSq < sizeSq) { // if i am close enough
+        obj.state = 2;    // change the state to remove (animatino)
+        obj.time = 0;     
+        return obj; // return which one is collided
       }
     }
     return false; // no collision
@@ -87,12 +87,12 @@ var Pickups = {
     });
   },
 
-  effect: function(id, type, appl) {
-    console.log("pickup "+ type + "picked up by"+id+" apply to "+appl);
+  effect: function(id, type, apply) {
+    console.log("pickup "+ type + "picked up by"+id+" apply to "+apply);
     for(var it in App.actors) {
-      if(appl == 2 ||                 // everyone
-        (appl == 1 && it != id) ||    // all but the player
-        (appl == 0 && id == it)) {    // only the player
+      if(apply == 2 ||                 // everyone
+        (apply == 1 && it != id) ||    // all but the player
+        (apply == 0 && id == it)) {    // only the player
         console.log("apply to "+it);
         switch(type) {
           case 0: // delete lines
@@ -122,45 +122,33 @@ var Pickups = {
 
   disEffect: function(id, type, apply) {
     console.log("DisEffect pickup "+ type + "picked up by"+id+" apply to "+apply);
-    /*witch(type) {
-      case 0:  // slow down self
-        App.actors[id].calcSpeed(2);
-        break;
-      case 1: // slow down others
-        for(var it in App.actors) {
-          if(it == id) continue;
-          App.actors[it].calcSpeed(2);
+    for(var it in App.actors) {
+      if(apply == 2 ||                 // everyone
+        (apply == 1 && it != id) ||    // all but the player
+        (apply == 0 && id == it)) {    // only the player
+        console.log("apply to "+it);
+        switch(type) {
+          case 0: // delete lines
+            
+            break;
+          case 1: // 90 deg
+            App.actors[it].set90Deg(false);
+            break;
+          case 2: // invisible
+            App.actors[it].setInvisible(false);
+            break;
+          case 3: // no control
+            App.actors[it].setNoControl(false);
+            break;
+          case 4: // open walls
+             
+            break;
+          case 5: // invincible
+            App.actors[it].setInvincible(false);
+            break;
         }
-        break;
-      case 2:  // speed up self
-        App.actors[id].calcSpeed(0.5);
-        break;
-      case 3:  // speed up others
-        for(var it in App.actors) {
-          if(it == id) continue;
-          App.actors[it].calcSpeed(0.5);
-        }
-        break;
-      case 4: // others bolder
-        for(var it in App.actors) {
-          if(it == id) continue;
-          App.actors[it].calcSize(0.5);
-        }
-        break;
-      case 5: // invert others
-        for(var it in App.actors) {
-          if(it == id) continue;
-          App.actors[it].invert(false);
-        }
-        break;
-      case 6: // borders translucent
-        break;
-      case 7: // smaller self
-        App.actors[id].calcSize(2);
-        break;
-      case 8: // borders static
-        break;
-    }*/
+      }
+    }
   }
 };
 

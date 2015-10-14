@@ -3,6 +3,8 @@ var fs = require('fs');
 
 var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
 eval(fs.readFileSync('structure.js', 'utf8'));
+eval(fs.readFileSync('pickup_descr.js', 'utf8'));
+
 var WebSocketServer = require('ws').Server;
 
 var Server = {
@@ -94,9 +96,10 @@ var User = function(ws, id) {
           obj.next_gap = Match.actors[_id].next_gap;
           break;
         case 5:
+          console.log('RECV A PICKUP EVENT');
           // pickup was collected, create opposite effect
           handlePickup(obj);
-        break;
+          break;
         case 6:
           Match.state = 0;  // pause
           var t = setTimeout(function() {
@@ -250,17 +253,44 @@ var Match = {
         actor.gap = Server.now + Math.random() * 700 + 300;
       }
     }
-    // pickups
-    if(Match.next_pickup <= Server.now && Match.state != 0) {
+    // create new pickups
+    if (Match.next_pickup <= Server.now && Match.state != 0) {
+      // determine which pickup i should choose
       //console.log("new pickup");
+
+      var pickup_sum = 0;
+      for (var i = 0; i < PICKUP.length; i++) {
+        for (var j = 0; j < PICKUP[i].prop.length; j++) {
+          pickup_sum += PICKUP[i].prop[j];
+        }
+      }
+      console.log('propability of all pickups is ', pickup_sum);
+
+      var rand = Math.random() * pickup_sum;
+
+
+      var pick_item = (function() {
+        for (var i = 0; i < PICKUP.length; i++) {
+          for (var j = 0; j < PICKUP[i].prop.length; j++) {
+            rand -= PICKUP[i].prop[j];
+            if (rand <= 0) {
+              return {num: i, apply: j};
+            }
+          }
+        }
+      })();
+      console.log('pick item is ', pick_item);
+      
+
+
       Hist.push({
         type: 4,
         p_id: Server.p_id++,
         time: Server.now,
         x: Math.random(),
         y: Math.random(),
-        num: Math.floor(Math.random() * 6),
-        apply: Math.floor(Math.random() * 3)
+        num: pick_item.num,
+        apply: pick_item.apply
       });
       Match.next_pickup = Server.now + Math.random() * 5000;
     }
@@ -295,6 +325,6 @@ var handlePickup = function(obj) {
     obj.time = Server.updateTime();
     obj.p_id = Server.p_id++;
     Hist.push(obj);
-  }, 2000);
+  }, PICKUP[obj.num].dur);
   Server.pending_timeouts[t] = true;
 }

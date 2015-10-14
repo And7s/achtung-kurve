@@ -22,10 +22,10 @@ var Actor = function(id) {
   this.update = function(dt) {
     this.move(dt);
 
-    var type;
-    if((type = Pickups.collide(x, y)) !== false) {  // check collision with pickups
-      if(Client.getId() == id) {
-        Client.sendPickup(type);
+    var obj;
+    if ((obj = Pickups.collide(x, y)) !== false) {  // check collision with pickups
+      if (Client.getId() == id) {
+        Client.sendPickup(obj);
       }
     }
   };
@@ -125,10 +125,6 @@ var Actor = function(id) {
   this.calcSize = function(factor) {
     size *= factor;
     console.log("size now ", size);
-  };
-
-  this.invert = function(bool) {
-    invert = bool;
   };
 
   // moves and checks for collision
@@ -234,5 +230,30 @@ var Actor = function(id) {
 
   this.setInvincible = function(bool) {
     invincible = bool;
+  };
+
+  this.invert = function(bool) {
+    invert = bool;
+  };
+
+  // getters
+  this.get90Deg = function() {
+    return deg_90;
+  };
+
+  this.getInvisible = function() {
+    return invisible;
+  };
+
+  this.getNoControl = function() {
+    return no_control;
+  };
+
+  this.getInvincible = function() {
+    return invincible;
+  };
+
+  this.getInvert = function() {
+    return invert;
   };
 };
