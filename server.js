@@ -115,6 +115,7 @@ var User = function(ws, id) {
 
       //var ab = Structure.pack(obj, obj.type );
     }
+    _this.push();
   };
 
 
@@ -142,12 +143,15 @@ var User = function(ws, id) {
     // collect events till this time point, go back in time
     var ab = new Buffer(0);
     var num = Hist[Hist.length - 1].p_id - _user_p_id;
-    console.log(_id+" last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
+    if (num < 0) num = 1; // if number is negative, due to package loss, take one message
+    if (num > 60) num = 60; // limit packages send at once
+    //console.log(_id+" last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
     //console.log(Hist);
 
     for(var i = Math.max(Hist.length - num, 0); i < Hist.length; i++) {
       ab = Structure.append(ab, Structure.pack(Hist[i], Hist[i].type));
     }
+    //console.log('send '+num);
     _this.send(ab);
 
   };
@@ -161,10 +165,10 @@ var User = function(ws, id) {
     time: Server.updateTime()
   }, 0));
 
-
+  // actually not needed, as answers are sent on recv, but to provide a more fluetn play
   var _interval = setInterval(function() {
     _this.push();
-  }, 15);
+  }, 100);
 };
 
 function getTime() {
@@ -185,10 +189,12 @@ var Match = {
 
     // clear all peding timeouts
     for(var it in Server.pending_timeouts) {
-      clearTimeout(it);
-      delete Server.pending_timeouts[it];
-      debugger;
+      if(it) {
+        clearTimeout(it);
+      }
+      //delete Server.pending_timeouts[it];
     }
+    Server.pending_timeouts = {};
 
     Hist.push({
       type: 3,
