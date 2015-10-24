@@ -111,10 +111,11 @@ var User = function(ws, id) {
 
       }
 
-      Hist.push(obj);
+      Hist.push(Structure.pack(obj, obj.type));
 
       //var ab = Structure.pack(obj, obj.type );
     }
+    _this.push();
   };
 
 
@@ -140,14 +141,30 @@ var User = function(ws, id) {
 
   this.push = function() {
     // collect events till this time point, go back in time
-    var ab = new Buffer(0);
-    var num = Hist[Hist.length - 1].p_id - _user_p_id;
-    console.log(_id+" last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
+
+    var num = Server.p_id - _user_p_id;
+    if (num < 0) num = 1; // if number is negative, due to package loss, take one message
+    if (num > 60) num = 60; // limit packages send at once
+    //console.log(_id+" last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
     //console.log(Hist);
 
+    Server.stats.packs += num;
+    var arr_of_buff = [];
+    var start = process.hrtime();
     for(var i = Math.max(Hist.length - num, 0); i < Hist.length; i++) {
-      ab = Structure.append(ab, Structure.pack(Hist[i], Hist[i].type));
+      arr_of_buff.push(Hist[i]);
     }
+    ab = Buffer.concat(arr_of_buff);
+    var end = process.hrtime();
+    var diff = (end[0] - start[0]) * 1E9 + end[1] - start[1];
+    if(diff < 0) {
+      console.log(start);
+      console.log(end);
+      console.log(diff);
+    }
+    //console.log('packing '+num+' took '+diff);
+    Server.stats.tpacking += diff;
+    //console.log('send '+num);
     _this.send(ab);
 
   };
@@ -161,10 +178,11 @@ var User = function(ws, id) {
     time: Server.updateTime()
   }, 0));
 
-
+  // actually not needed, as answers are sent on recv, but to provide a more fluetn play
   var _interval = setInterval(function() {
     _this.push();
-  }, 15);
+    // bad side effect: after game finished, client doesnt send any linger, package rate drops
+  }, 100);
 };
 
 function getTime() {
@@ -185,16 +203,18 @@ var Match = {
 
     // clear all peding timeouts
     for(var it in Server.pending_timeouts) {
-      clearTimeout(it);
-      delete Server.pending_timeouts[it];
-      debugger;
+      if(it) {
+        clearTimeout(it);
+      }
+      //delete Server.pending_timeouts[it];
     }
+    Server.pending_timeouts = {};
 
-    Hist.push({
+    Hist.push(Structure.pack({
       type: 3,
       time: Server.updateTime(),
       p_id: Server.p_id++
-    }); // start a new game
+    }, 3)); // start a new game
 
     Match.next_pickup = Math.random()* 200;//2000 + Math.random() * 4000;
 
@@ -231,7 +251,7 @@ var Match = {
         time: Server.updateTime()
       };
 
-      Hist.push(this.actors[it]); // spawn position of actors
+      Hist.push(Structure.pack(this.actors[it], 2)); // spawn position of actors
     }
     //console.log(this.actors);
 
@@ -283,7 +303,7 @@ var Match = {
       
 
 
-      Hist.push({
+      Hist.push(Structure.pack({
         type: 4,
         p_id: Server.p_id++,
         time: Server.now,
@@ -291,7 +311,7 @@ var Match = {
         y: Math.random(),
         num: pick_item.num,
         apply: pick_item.apply
-      });
+      }, 4));
       Match.next_pickup = Server.now + Math.random() * 5000;
     }
   },
@@ -303,8 +323,8 @@ setInterval(function() {
 
 setInterval(function() {
   console.log("Network stats:");
-  console.log("====");
-  console.log("Cin "+Server.stats.c_in+" Cout: "+Server.stats.c_out);
+  console.log("====") ;
+  console.log("Cin "+Server.stats.c_in+" Cout: "+Server.stats.c_out+" packs "+Server.stats.packs+' packing took '+(Server.stats.tpacking / 1E6) + 'ms');
   console.log("traffic in: "+ Server.stats.t_in+" out "+ Server.stats.t_out);
 
    Server.stats = {
@@ -312,7 +332,9 @@ setInterval(function() {
     c_out: 0,
     t_in: 0,
     t_out: 0,
-    last_time: getTime()
+    last_time: getTime(),
+    packs: 0,
+    tpacking: 0
   };
 }, 999)
 
@@ -324,7 +346,7 @@ var handlePickup = function(obj) {
     obj.type = 7; // diseffect
     obj.time = Server.updateTime();
     obj.p_id = Server.p_id++;
-    Hist.push(obj);
+    Hist.push(Structure.pack(obj, obj.type));
   }, PICKUP[obj.num].dur);
   Server.pending_timeouts[t] = true;
 }
