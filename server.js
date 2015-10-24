@@ -141,8 +141,7 @@ var User = function(ws, id) {
 
   this.push = function() {
     // collect events till this time point, go back in time
-
-    var num = Server.p_id - _user_p_id;
+    var num = Hist[Hist.length - 1].p_id - _user_p_id;
     if (num < 0) num = 1; // if number is negative, due to package loss, take one message
     if (num > 60) num = 60; // limit packages send at once
     //console.log(_id+" last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
