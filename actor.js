@@ -232,7 +232,7 @@ var Actor = function(id) {
     invincible = bool;
   };
 
-  this.invert = function(bool) {
+  this.setInvert = function(bool) {
     invert = bool;
   };
 

@@ -114,6 +114,16 @@ var Pickups = {
           case 5: // invincible
             App.actors[it].setInvincible(true);
             break;
+          case 6: // invert
+            App.actors[it].setInvert(true);
+            break;
+          case 7: // snooze
+            App.actors[it].calcSpeed(0.5);
+            break;
+          case 8: // speed
+            App.actors[it].calcSpeed(2);
+            break;
+
         }
       }
     }
@@ -145,6 +155,15 @@ var Pickups = {
             break;
           case 5: // invincible
             App.actors[it].setInvincible(false);
+            break;
+          case 6: // invert
+            App.actors[it].setInvert(false);
+            break;
+          case 7: // snooze
+            App.actors[it].calcSpeed(2);
+            break;
+          case 8: // speed
+            App.actors[it].calcSpeed(0.5);
             break;
         }
       }

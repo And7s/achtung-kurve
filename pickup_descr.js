@@ -25,5 +25,17 @@ var PICKUP = [
     prop: [1, 1, 1],
     descr: 'affected players become invincible',
     dur: 2500
+  }, {
+    prop: [1, 1, 1],
+    descr: 'reverse steering control',
+    dur: 2500
+  }, {
+    prop: [1, 1, 1],
+    descr: 'slowing down',
+    dur: 2000
+  }, {
+    prop: [1, 1, 1],
+    descr: 'increase speed',
+    dur: 1500
   }
 ];
