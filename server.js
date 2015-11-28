@@ -13,7 +13,7 @@ var Server = {
   all_user: {},
   time: getTime(), // reference time, when server did start
   now: 0, // time the match is running
-  p_id: 1,
+  p_id: 2,  // start with 2, bec. 0=no message, 1=fst welcome, from there (2) history kicks in
   stats: {
     c_in: 0,
     c_out: 0,
@@ -26,12 +26,6 @@ var Server = {
   updateTime: function() {
     Server.now = (getTime() - Server.time);
     return Server.now;
-  },
-  broadcast: function (ab, exclude) { // broadcast to anyone, but the sender
-    for(var it in all_user) {
-      if(Server.all_user[it].getId() == exclude) continue;
-      Server.all_user[it].send(ab);
-    }
   }
 };
 
@@ -42,8 +36,11 @@ console.log("server started");
 Server.wss.on('connection', function(ws) {
   var user = new User(ws, Server.connections);// create a new User
   Server.all_user[Server.connections] = user;
+  console.log('create dummy with', Server.connections);
+  Match.createDummy(Server.connections);
+  Match.reconsider();
   Server.connections++;
-  Match.restart();
+  //Match.restart();
 });
 
 
@@ -56,8 +53,6 @@ var User = function(ws, id) {
   var _id = id;
   var _this = this;
   var _name = "noName_"+id;
-
-
 
   _ws.binaryType = 'arraybuffer';
 
@@ -80,9 +75,12 @@ var User = function(ws, id) {
   var processMessage = function(objs) {
     for(var i = 0; i < objs.length; i++) {
       var obj = objs[i];
-      //console.log("got msg", obj);
+      // console.log("got msg", obj);
 
   //    log_file.write("history has lengt "+Hist.length+" user "+_id+" is at state "+_user_p_id+" server state "+Server.p_id+"\n");
+      if(Match.actors[id].state == ACTOR_WATCHING) {
+        console.log('got msg with pid' + obj.p_id);
+      }
       _user_p_id = Math.max(obj.p_id, _user_p_id);
   //    log_file.write("user is at state ", _user_p_id+"\n");
       obj.from = _id;
@@ -122,6 +120,7 @@ var User = function(ws, id) {
    // will remove current user (which has rank _rank) and update other ranks
   this.disconnect = function() {
     clearInterval(_interval);
+    delete Match.actors[_id];
     delete Server.all_user[_id];
   };
 
@@ -143,15 +142,33 @@ var User = function(ws, id) {
     // collect events till this time point, go back in time
     var num = Server.p_id - _user_p_id;
 
-    if (num < 0) num = 1; // if number is negative, due to package loss, take one message
-    if (num > 60) num = 60; // limit packages send at once
+    var start_package = Hist.length - num,
+      end_package = Hist.length;
+    if (num <= 0) {
+      start_package = Hist.length - 1;
+      num = 1; // if number is negative, due to package loss, take one message
+    }
+    if (num > 60) {// limit packages send at once, send the 60 packages, after the last one (so not the current once
+      start_package = Math.max(Hist.length - num, 0); // need to avoid negative overflows, during game restart
+      end_package = start_package + 60;
+      //console.log('user '+id+'is behind'+num);
+      //console.log(_id+" last is at "+Server.p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now+' hist.length is '+Hist.length);
+    }
+
+    // valid start and end
+    start_package = Math.max(start_package, 0);
+    end_package = Math.min(end_package, Hist.length);
+    if(Match.actors[id].state == ACTOR_WATCHING) {
+      console.log('Send ' + id + ' from ' + start_package + ' to ' + end_package);
+    }
+
     //console.log(_id+" last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
     //console.log(Hist);
 
     Server.stats.packs += num;
     var arr_of_buff = [];
     var start = process.hrtime();
-    for(var i = Math.max(Hist.length - num, 0); i < Hist.length; i++) {
+    for(var i = start_package; i < end_package; i++) {
       arr_of_buff.push(Hist[i]);
     }
     ab = Buffer.concat(arr_of_buff);
@@ -176,9 +193,10 @@ var User = function(ws, id) {
   _this.send(Structure.pack({
     id: _id,
     state: Match.state,
-    p_id: Server.p_id++,
+    p_id: 1,
     time: Server.updateTime()
   }, 0));
+  Server.p_id++;
 
   // actually not needed, as answers are sent on recv, but to provide a more fluetn play
   var _interval = setInterval(function() {
@@ -250,7 +268,8 @@ var Match = {
         gap: 0,
         next_gap: Math.random() * 2000,
         p_id: Server.p_id++,
-        time: Server.updateTime()
+        time: Server.updateTime(),
+        state: ACTOR_WAITING
       };
 
       Hist.push(Structure.pack(this.actors[it], 2)); // spawn position of actors
@@ -260,6 +279,34 @@ var Match = {
     setTimeout(function() {
       Match.state = 2;
     }, 2000);
+  },
+
+  // consider if i should start a new match
+  reconsider: function() {
+    var alive = 0;
+    for (var it in this.actors) {
+      if (this.actors[it].state == ACTOR_WAITING || this.actors[it].state == ACTOR_PLAYING) {
+        alive++;
+      }
+      console.log('state ' + this.actors[it].state);
+    }
+    console.log('there are '+alive);
+    if (alive <= 1) {
+      console.log('bec');
+      Match.restart();
+    }
+  },
+
+  createDummy: function(id) {
+    // initialize objects that are necessary during waiting phase
+    this.actors[id] = {
+      type: 2,
+      gap: 0,
+      next_gap: 0,
+      p_id: 0,
+      time: 0,
+      state: ACTOR_WATCHING
+    };
   },
 
   update: function() {
@@ -286,7 +333,7 @@ var Match = {
           pickup_sum += PICKUP[i].prop[j];
         }
       }
-      console.log('propability of all pickups is ', pickup_sum);
+      console.log('probability of all pickups is ', pickup_sum);
 
       var rand = Math.random() * pickup_sum;
 
@@ -316,7 +363,7 @@ var Match = {
       }, 4));
       Match.next_pickup = Server.now + Math.random() * 5000;
     }
-  },
+  }
 };
 
 setInterval(function() {
@@ -338,7 +385,7 @@ setInterval(function() {
     packs: 0,
     tpacking: 0
   };
-}, 999)
+}, 999);
 
 
 var handlePickup = function(obj) {

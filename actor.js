@@ -5,7 +5,7 @@ var Actor = function(id) {
       speed = 0.001,
       rot = 0,
       size = 2,
-      state = 2,  // 0: waiting (before game start), 1: playing, 2: dead
+      state = ACTOR_WATCHING,// 0: waiting (before game start), 1: playing, 2: dead, 3: not participating
       invert = false,
       time = 0,
       dir = 0,  // which side is pressed
@@ -13,7 +13,7 @@ var Actor = function(id) {
       last_dir = null,  // which directin was pressed the last time
       invisible = false,  // if player is invisible
       no_control = false,
-      invincible = false;
+      invincible = true; // DEBUG false;
 
 
   this.gap = 0,
@@ -39,7 +39,7 @@ var Actor = function(id) {
   };
 
   this.isAlive = function() {
-    return state != 2;
+    return state != ACTOR_DEAD;
   };
 
   this.dispatchEvent = function(obj) {
@@ -75,8 +75,8 @@ var Actor = function(id) {
   };
 
   this.die = function() {
-    if(state == 2) return;  // you are already dead
-    state = 2;
+    if(state == ACTOR_DEAD) return;  // you are already dead
+    state = ACTOR_DEAD;
     Particles.add(x, y);
     // how many are remaining, am i the last person?
     var rem = 0, last_id = 0;
@@ -97,7 +97,7 @@ var Actor = function(id) {
 
   this.respawn = function(obj) {
     console.log(obj);
-    state = 0;
+    state = ACTOR_WAITING;
     x = obj.x;
     y = obj.y;
     rot = obj.rot;
@@ -111,9 +111,9 @@ var Actor = function(id) {
   };
 
   this.live = function() {
-    state = 1;
+    state = ACTOR_PLAYING;
     invisible = false;
-    invincible = false;
+    invincible = true; // DEBUG false;
     speed = 0.005;
   };
 

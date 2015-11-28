@@ -1,6 +1,6 @@
 var ws;
 var HOST = (location.host == "and7s.github.io") ? '212.227.97.146' : '192.168.2.100';
-//var HOST = 'localhost';
+var HOST = 'localhost';
 //var HOST = '212.227.97.146';
 var PORT = 8080;
 
@@ -88,6 +88,7 @@ var Client = {
       //console.log("message", objs);
       for(var i = 0; i < objs.length; i++) {
         var obj = objs[i];
+        //console.log('gto msg with pid'+obj.p_id);
 
         if(Client.p_id == obj.p_id) continue; // already allied this change
         if(Client.p_id > obj.p_id) {  // client already has this patch applied
@@ -146,7 +147,7 @@ var Client = {
   },
 
   push: function() {  // send data with timestamp to the client inform him abut what has changed
-    //console.log("try send");
+    //console.log("try send"+ this.id+' pid '+Client.p_id);
     if(ws.readyState !== 1 || this.id === null) return;
 
     //console.log("continue");

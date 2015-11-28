@@ -26,6 +26,7 @@ var Menu = {
       t = t.toFixed(1);
       text(t, 0, 80, 50, '#fff', this.ctx);
       text("pid: "+Client.p_id, 0, 90, 20, '#FFF', this.ctx);
+      text("histl: "+Hist.length, 0, 110, 20, '#FFF', this.ctx);
     }
 
     // draw highscore

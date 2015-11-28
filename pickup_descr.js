@@ -39,3 +39,10 @@ var PICKUP = [
     dur: 1500
   }
 ];
+
+// states descriptions
+
+var ACTOR_WAITING = 0,
+  ACTOR_PLAYING = 1,
+  ACTOR_DEAD = 2,
+  ACTOR_WATCHING = 3;

@@ -163,13 +163,11 @@ App.dispatchEvent = function(obj) {
 };
 
 App.restartMatch = function() {
-
-  Field.trans = false;
+  Field.trans = true; // false; // DEBUG
   App.actors = {};
   Pickups.arr = [];
   App.state = 1;
   App.clearField();
-
 };
 
 App.clearField = function() {
@@ -189,8 +187,6 @@ App.setActor = function(obj) {
   App.actors[obj.id].respawn(obj);
 
 };
-
-
 
 var COLORS = [
   '#f00',
@@ -226,7 +222,7 @@ function text(text, x,y, size, color, ctx) {
 
 
 
-var getTime = function() {
+function getTime() {
   return new Date().getTime();
 }
 
