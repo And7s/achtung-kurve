@@ -113,7 +113,7 @@ var Actor = function(id) {
   this.live = function() {
     state = ACTOR_PLAYING;
     invisible = false;
-    invincible = true; // DEBUG false;
+    invincible = false; // DEBUG false;
     speed = 0.005;
   };
 
