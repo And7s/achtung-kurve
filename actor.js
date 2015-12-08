@@ -13,7 +13,7 @@ var Actor = function(id) {
       last_dir = null,  // which directin was pressed the last time
       invisible = false,  // if player is invisible
       no_control = false,
-      invincible = true; // DEBUG false;
+      invincible = false; // DEBUG false;
 
 
   this.gap = 0,
@@ -102,7 +102,7 @@ var Actor = function(id) {
     y = obj.y;
     rot = obj.rot;
     invisible = true;
-    invincible = true;
+    invincible = false;
     no_control = false;
     invert = false;
     deg_90 = false;
