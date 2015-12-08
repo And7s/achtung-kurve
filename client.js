@@ -1,7 +1,7 @@
 var ws;
 var HOST = (location.host == "and7s.github.io") ? '212.227.97.146' : '192.168.2.100';
 var HOST = 'localhost';
-//var HOST = '212.227.97.146';
+var HOST = '212.227.97.146';
 var PORT = 8080;
 
 
