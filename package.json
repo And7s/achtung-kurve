@@ -1,0 +1,10 @@
+{
+  "name": "achtung-kurve",
+  "description": "Achtung Kurve Game",
+  "version": "0.0.1",
+  "private": false,
+  "dependencies": {
+    "gyp": "*",
+    "ws": "*"
+  }
+}
