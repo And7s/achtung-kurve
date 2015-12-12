@@ -9,6 +9,18 @@ App.canvas = document.getElementById('c');
 
 App.actors = {};
 App.scores = {};
+App.stats = {
+  fps: {
+    cur_fps: 0,
+    fps: 0,
+    time: getTime()
+  },
+  msg_recv: 0,  // messages recieved in the last second
+  msg_apply: 0, // message aplied (new)
+  msg_diff: 0,  // how far behind the messages were (avg)
+  msg_max: 0,   // the longest clatch of messages,
+  packages_recv: 0  // packages recv (better should be called msg, but already taken)
+}
 
 App.init = function(images) {
   console.log(images);
@@ -61,7 +73,30 @@ App.resize = function() {
 
 
 App.render = function() {
+  // count FPS
+  App.stats.fps.cur_fps++;
 
+  var now = getTime();
+  if (now > App.stats.fps.time) {
+    App.stats.fps.time += 1000;
+    App.stats.fps.fps = App.stats.fps.cur_fps;
+    App.stats.fps.cur_fps = 0;
+    // reset other
+
+    App.stats.show = {
+      msg_recv: App.stats.msg_recv,
+      msg_max: App.stats.msg_max,
+      msg_diff: App.stats.msg_diff,
+      msg_apply: App.stats.msg_apply,
+      packages_recv: App.stats.packages_recv
+    };
+    App.stats.msg_recv = 0;
+    App.stats.msg_max = 0;
+    App.stats.msg_diff = 0;
+    App.stats.msg_apply = 0;
+    App.stats.packages_recv = 0;
+
+  }
 
   for(var i = 0; i < 256; i++) {
     if(Key.down(i)) {
@@ -95,11 +130,8 @@ App.render = function() {
   App.ctx.stroke();
   App.ctx.closePath();
 
-
   // draw head
 
-
- 
   for(var it in App.actors) {
     // which color should you be drawn
     var color = '#FFF'; // default color
@@ -133,13 +165,12 @@ App.render = function() {
       );
     }
 
-
-
     App.ctx.fill();
     App.ctx.closePath();
   }
 
   // draw mask
+  /*
   if(DEBUG) {
     App.ctx.fillStyle="#0F0";
     for(var i = 0; i < App.maskRes; i++) {
@@ -149,10 +180,10 @@ App.render = function() {
         }
       }
     }
-  }
+  }*/
 
-  //window.requestAnimationFrame(App.render);
-  setTimeout(App.render, 16)
+  window.requestAnimationFrame(App.render);
+  //setTimeout(App.render, 16)
 };
 
 App.dispatchEvent = function(obj) {
@@ -163,7 +194,7 @@ App.dispatchEvent = function(obj) {
 };
 
 App.restartMatch = function() {
-  Field.trans = true; // false; // DEBUG
+  Field.trans = DEBUG;
   App.actors = {};
   Pickups.arr = [];
   App.state = 1;
@@ -217,10 +248,7 @@ function text(text, x,y, size, color, ctx) {
   ctx.font = '400 '+size+"px Open Sans";
   ctx.textBaseline = 'bottom';
   ctx.fillText(text, x, y);
-
 }
-
-
 
 function getTime() {
   return new Date().getTime();

@@ -6,12 +6,12 @@ var PORT = 8080;
 
 
 var tmp_last = 0;
-var Hist = [];
 var Client = {
   active: false,
   timeout: null,
   id: null,
   p_id: 0,
+  rp_id: 0, // recieved package id, so therer are no unnecessary packages resend, that alreay were recieved
   behind_time: 0,
   messagebuffer: [],
   bufferdelay: 30, // time for buffering messages and getting smoother rendering
@@ -21,7 +21,7 @@ var Client = {
 
   initialize: function() {
 
-    ws = new WebSocket('ws://'+HOST+':'+PORT+'/');
+    ws = new WebSocket('ws://' + HOST + ':' + PORT + '/');
 
     var that = this;
 
@@ -31,7 +31,8 @@ var Client = {
     ws.onopen = function(e) {
       that.active = true;
       Client.p_id = 0;
-      console.log("Connected to "+HOST+":"+PORT);
+      Client.rp_id = 0;
+      console.log("Connected to " + HOST + ":" + PORT);
     };
 
     ws.onclose = function(e) {
@@ -45,6 +46,7 @@ var Client = {
     };
 
     ws.onmessage = function (e, flags) {
+      App.stats.packages_recv++;
       if(typeof(e.data) == "string") {
         console.log("recieve string ", e.data);
       }else { //binary
@@ -53,14 +55,15 @@ var Client = {
     };
 
     var bufferMessage = function(objs) {
-      // flush existing messages
-      if(this.messagebuffer.length > 0) {
-       processMessage(this.messagebuffer);
-     }
-
-      this.messagebuffer = objs;
+      Array.prototype.push.apply(this.messagebuffer, objs); // add the new messages to the buffer
       this.buffertime = getTime();
       this.apply_time = objs[objs.length - 1].time - this.bufferdelay;
+
+      Client.rp_id = objs[objs.length - 1].p_id;
+      App.stats.msg_recv += objs.length;
+      var diff = objs[objs.length - 1].time - App.time || 0;  // time difference between server timee and local time
+      App.stats.msg_diff += diff;
+      App.stats.msg_max = Math.max(App.stats.msg_max, diff);
     };
 
     // updates the client, applies the latest changes
@@ -71,13 +74,12 @@ var Client = {
 
       this.apply_time += delta; // i whould take messages till this point (doesnt mean there are messages till this point)
       for(var i = 0; i < this.messagebuffer.length; i++) {
-        if(this.messagebuffer[i].time <= this.apply_time) {
+        // if time is right to apply, or type is 3 (new game)
+        if(this.messagebuffer[i].time <= this.apply_time || this.messagebuffer[i].type == 3) {
 
           processMessage([this.messagebuffer[i]]);  // apply this message
           this.messagebuffer.shift(); // remove element
           i--;
-        } else {
-          return;
         }
       }
     };
@@ -97,7 +99,7 @@ var Client = {
         if(Client.p_id != obj.p_id -1) {
           //debugger;
         }
-        Hist.push(obj);
+        App.stats.msg_apply++;
         App.time = obj.time;
 
         if(App.state == 1 && App.time >= 2000) {  // erplaced the original settimeout, casue they might be different locally, take server clock
@@ -126,8 +128,6 @@ var Client = {
           App.restartMatch();
           break;
         case 4:
-          console.log("add pickup in client");
-          console.log(obj);
           Pickups.add(obj.num, obj.apply, obj.x, obj.y);
           break;
         case 5:
@@ -168,7 +168,7 @@ var Client = {
       id: this.id,
       dir: sendDir,
       time: App.time,
-      p_id: Client.p_id
+      p_id: Client.rp_id
     });
 
     if(Client.sendqueue.byteLength > 0)
@@ -190,7 +190,7 @@ var Client = {
   sendPickup: function(obj) {
     this.appendQueue({
       type: 5,
-      p_id: Client.p_id,
+      p_id: Client.rp_id,
       time: App.time,
       id: this.id,
       num: obj.type,
@@ -201,7 +201,7 @@ var Client = {
   sendEnd: function(id) {
     this.appendQueue({
       type: 6,
-      p_id: Client.p_id,
+      p_id: Client.rp_id,
       time: App.time,
       id: id
     });

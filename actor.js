@@ -13,7 +13,7 @@ var Actor = function(id) {
       last_dir = null,  // which directin was pressed the last time
       invisible = false,  // if player is invisible
       no_control = false,
-      invincible = false; // DEBUG false;
+      invincible = DEBUG;
 
 
   this.gap = 0,
@@ -102,7 +102,7 @@ var Actor = function(id) {
     y = obj.y;
     rot = obj.rot;
     invisible = true;
-    invincible = false;
+    invincible = DEBUG;
     no_control = false;
     invert = false;
     deg_90 = false;
@@ -113,7 +113,7 @@ var Actor = function(id) {
   this.live = function() {
     state = ACTOR_PLAYING;
     invisible = false;
-    invincible = false; // DEBUG false;
+    invincible = DEBUG;
     speed = 0.005;
   };
 
@@ -134,6 +134,8 @@ var Actor = function(id) {
         dy = Math.sin(rot) * speed * dt;
 
     // i iterate over the forwards angles
+
+if(!DEBUG) {
     for(var i = -Math.PI; i <= Math.PI; i+= Math.PI / 10) {
 
       // i set the mask at the inner bounds, the actual size
@@ -154,9 +156,9 @@ var Actor = function(id) {
         cy = Math.round(cy);
 
 
-        if(DEBUG) {
+        /*if(DEBUG) {
           App.ctx.fillRect(App.width - App.maskRes + cx, App.height - App.maskRes + cy, 1, 1 );
-        }
+        }*/
 
 
         if(cx >= 0 && cx < App.maskRes && cy >= 0 && cy < App.maskRes) {  // avoid out of bounds
@@ -175,7 +177,7 @@ var Actor = function(id) {
         }
       }
     }
-
+}
     x += dx;
     y += dy;
 

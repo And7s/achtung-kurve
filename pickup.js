@@ -13,7 +13,7 @@ var Pickups = {
       var distSq = (obj.x - x) * (obj.x - x) + (obj.y - y) * (obj.y - y);
       if(distSq < sizeSq) { // if i am close enough
         obj.state = 2;    // change the state to remove (animatino)
-        obj.time = 0;     
+        obj.time = 0;
         return obj; // return which one is collided
       }
     }
@@ -93,7 +93,6 @@ var Pickups = {
       if(apply == 2 ||                 // everyone
         (apply == 1 && it != id) ||    // all but the player
         (apply == 0 && id == it)) {    // only the player
-        console.log("apply to "+it);
         switch(type) {
           case 0: // delete lines
             // currently only delete all lines supported
@@ -139,7 +138,7 @@ var Pickups = {
         console.log("apply to "+it);
         switch(type) {
           case 0: // delete lines
-            
+
             break;
           case 1: // 90 deg
             App.actors[it].set90Deg(false);
@@ -151,7 +150,7 @@ var Pickups = {
             App.actors[it].setNoControl(false);
             break;
           case 4: // open walls
-             
+
             break;
           case 5: // invincible
             App.actors[it].setInvincible(false);

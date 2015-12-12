@@ -19,7 +19,8 @@ var Server = {
     c_out: 0,
     t_in: 0,
     t_out: 0,
-    last_time: getTime()
+    last_time: getTime(),
+    maxt: 0
   },
   pending_timeouts: {},
 
@@ -49,6 +50,7 @@ var User = function(ws, id) {
   // construct the user
   var _last_msg = getTime();
   var _user_p_id = 0;
+  var _assume_p_id = 0; // the pid the client has under the assumption all packages have been recv
   var _ws = ws;
   var _id = id;
   var _this = this;
@@ -75,13 +77,9 @@ var User = function(ws, id) {
   var processMessage = function(objs) {
     for(var i = 0; i < objs.length; i++) {
       var obj = objs[i];
-      // console.log("got msg", obj);
 
-  //    log_file.write("history has lengt "+Hist.length+" user "+_id+" is at state "+_user_p_id+" server state "+Server.p_id+"\n");
-      if(Match.actors[id].state == ACTOR_WATCHING) {
-        console.log('got msg with pid' + obj.p_id);
-      }
       _user_p_id = Math.max(obj.p_id, _user_p_id);
+      //console.log('user is at '+_user_p_id+' '+Server.p_id);
   //    log_file.write("user is at state ", _user_p_id+"\n");
       obj.from = _id;
       if(Match.state != 0) {
@@ -138,9 +136,17 @@ var User = function(ws, id) {
     }
   };
 
-  this.push = function() {
+  this.push = function(pessimistic) {
+    pessimistic = pessimistic || false;
     // collect events till this time point, go back in time
-    var num = Server.p_id - _user_p_id;
+    var num;
+    if (pessimistic) {
+      num = Server.p_id - _user_p_id;
+    } else {
+      num = Server.p_id - _assume_p_id; // one safety package
+      _assume_p_id = Server.p_id;
+    }
+
 
     var start_package = Hist.length - num,
       end_package = Hist.length;
@@ -151,19 +157,11 @@ var User = function(ws, id) {
     if (num > 60) {// limit packages send at once, send the 60 packages, after the last one (so not the current once
       start_package = Math.max(Hist.length - num, 0); // need to avoid negative overflows, during game restart
       end_package = start_package + 60;
-      //console.log('user '+id+'is behind'+num);
-      //console.log(_id+" last is at "+Server.p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now+' hist.length is '+Hist.length);
     }
 
     // valid start and end
     start_package = Math.max(start_package, 0);
     end_package = Math.min(end_package, Hist.length);
-    if(Match.actors[id].state == ACTOR_WATCHING) {
-      console.log('Send ' + id + ' from ' + start_package + ' to ' + end_package);
-    }
-
-    //console.log(_id+" last is at "+Hist[Hist.length - 1].p_id+" user is at "+_user_p_id+" need el "+num+ " Server time "+Server.now);
-    //console.log(Hist);
 
     Server.stats.packs += num;
     var arr_of_buff = [];
@@ -172,6 +170,13 @@ var User = function(ws, id) {
       arr_of_buff.push(Hist[i]);
     }
     ab = Buffer.concat(arr_of_buff);
+
+
+
+
+    //console.log('send '+num);
+    _this.send(ab);
+
     var end = process.hrtime();
     var diff = (end[0] - start[0]) * 1E9 + end[1] - start[1];
     if(diff < 0) {
@@ -179,12 +184,9 @@ var User = function(ws, id) {
       console.log(end);
       console.log(diff);
     }
-
-    //console.log('packing '+num+' took '+diff);
+    Server.stats.maxt = Math.max(Server.stats.maxt, diff);
+     //console.log('packing '+num+' took '+diff);
     Server.stats.tpacking += diff;
-
-    //console.log('send '+num);
-    _this.send(ab);
 
   };
 
@@ -200,7 +202,7 @@ var User = function(ws, id) {
 
   // actually not needed, as answers are sent on recv, but to provide a more fluetn play
   var _interval = setInterval(function() {
-    _this.push();
+    _this.push(true);
     // bad side effect: after game finished, client doesnt send any linger, package rate drops
   }, 100);
 };
@@ -349,7 +351,7 @@ var Match = {
         }
       })();
       console.log('pick item is ', pick_item);
-      
+
 
 
       Hist.push(Structure.pack({
@@ -373,7 +375,11 @@ setInterval(function() {
 setInterval(function() {
   console.log("Network stats:");
   console.log("====") ;
-  console.log("Cin "+Server.stats.c_in+" Cout: "+Server.stats.c_out+" packs "+Server.stats.packs+' packing took '+(Server.stats.tpacking / 1E6) + 'ms');
+  console.log("Cin "+Server.stats.c_in +
+    " Cout: " + Server.stats.c_out +
+    " packs "+Server.stats.packs +
+    ' packing took ' + (Server.stats.tpacking / 1E6) + 'ms' +
+    ' maxt ' + (Server.stats.maxt / 1E6) + 'ms');
   console.log("traffic in: "+ Server.stats.t_in+" out "+ Server.stats.t_out);
 
    Server.stats = {
@@ -383,7 +389,8 @@ setInterval(function() {
     t_out: 0,
     last_time: getTime(),
     packs: 0,
-    tpacking: 0
+    tpacking: 0,
+    maxt: 0
   };
 }, 999);
 
