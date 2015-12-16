@@ -117,7 +117,6 @@ var User = function(ws, id) {
 
    // will remove current user (which has rank _rank) and update other ranks
   this.disconnect = function() {
-    clearInterval(_interval);
     delete Match.actors[_id];
     delete Server.all_user[_id];
   };
@@ -195,16 +194,9 @@ var User = function(ws, id) {
   _this.send(Structure.pack({
     id: _id,
     state: Match.state,
-    p_id: 1,
+    p_id: Match.start_p_id,  // so the user knows where p_id is currently
     time: Server.updateTime()
   }, 0));
-  Server.p_id++;
-
-  // actually not needed, as answers are sent on recv, but to provide a more fluetn play
-  var _interval = setInterval(function() {
-    _this.push(true);
-    // bad side effect: after game finished, client doesnt send any linger, package rate drops
-  }, 100);
 };
 
 function getTime() {
@@ -216,11 +208,12 @@ var Match = {
   state: 0,  // 0: waiting, 1: playing
   actors: {},
   next_pickup: 0,
-
+  start_p_id: 0,  // at which the match started (for new starters)
   restart: function() {
     console.log("will restart game");
     Server.time = getTime();
     Match.state = 1;  // awakening
+    Match.start_p_id = Server.p_id - 1; // minus one, so you will get the nex real history package
     Hist = [];
 
     // clear all peding timeouts

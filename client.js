@@ -56,6 +56,10 @@ var Client = {
 
     var bufferMessage = function(objs) {
       Array.prototype.push.apply(this.messagebuffer, objs); // add the new messages to the buffer
+      // if messages have been recieved out of order, sort them
+      this.messagebuffer.sort(function compare(a, b) {
+        return a.p_id - b.p_id;
+      });
       this.buffertime = getTime();
       this.apply_time = objs[objs.length - 1].time - this.bufferdelay;
 
@@ -76,72 +80,81 @@ var Client = {
       for(var i = 0; i < this.messagebuffer.length; i++) {
         // if time is right to apply, or type is 3 (new game)
         if(this.messagebuffer[i].time <= this.apply_time || this.messagebuffer[i].type == 3) {
+          var apply = true;
+          var remove = true;
+          var obj = this.messagebuffer[i];
+          if(Client.p_id == obj.p_id) apply = false; // already allied this change
+          if (Client.p_id > obj.p_id) {  // client already has this patch applied
+            apply = false;
+          }
+          // new match must be applied aplways, welcome user, too
+          if (obj.type == 3 || obj.type == 0) {
 
-          processMessage([this.messagebuffer[i]]);  // apply this message
-          this.messagebuffer.shift(); // remove element
-          i--;
+          } else {
+            if(apply && Client.p_id != obj.p_id - 1) {
+              //return;
+              apply = false;
+
+              console.log('Client.p_id'+Client.p_id+' '+obj.p_id);
+              remove = false;
+              console.log(obj);
+              //debugger;
+            }
+          }
+
+          if (apply) processMessage(obj);  // apply this message
+          if (remove) {
+            this.messagebuffer.shift(); // remove element
+            i--;
+          }
         }
       }
     };
 
-    var processMessage = function(objs) {
-      //console.log("message "+(getTime() - tmp_last));
-      tmp_last = getTime();
-      //console.log("message", objs);
-      for(var i = 0; i < objs.length; i++) {
-        var obj = objs[i];
-        //console.log('gto msg with pid'+obj.p_id);
+    // expects a message that is exactly one step further
+    var processMessage = function(obj) {
 
-        if(Client.p_id == obj.p_id) continue; // already allied this change
-        if(Client.p_id > obj.p_id) {  // client already has this patch applied
-          continue;
+      App.stats.msg_apply++;
+      App.time = obj.time;
+
+      if(App.state == 1 && App.time >= 2000) {  // erplaced the original settimeout, casue they might be different locally, take server clock
+        App.state = 2;
+        for(var it in App.actors) { // awake all actors
+          App.actors[it].live();
         }
-        if(Client.p_id != obj.p_id -1) {
-          //debugger;
-        }
-        App.stats.msg_apply++;
+      }
+
+      Client.p_id = Math.max(obj.p_id, Client.p_id);
+
+      switch(obj.type) {
+      case 0:
+        Client.id = obj.id;
+        App.state = obj.state;
+        break;
+      case 1:
+        App.dispatchEvent(obj);
+        break;
+      case 2:
+        App.setActor(obj);
+        break;
+      case 3:
         App.time = obj.time;
-
-        if(App.state == 1 && App.time >= 2000) {  // erplaced the original settimeout, casue they might be different locally, take server clock
-          App.state = 2;
-          for(var it in App.actors) { // awake all actors
-            App.actors[it].live();
-          }
-        }
-
-
-        Client.p_id = Math.max(obj.p_id, Client.p_id);
-
-        switch(obj.type) {
-        case 0:
-          Client.id = obj.id;
-          App.state = obj.state;
-          break;
-        case 1:
-          App.dispatchEvent(obj);
-          break;
-        case 2:
-          App.setActor(obj);
-          break;
-        case 3:
-          App.time = obj.time;
-          App.restartMatch();
-          break;
-        case 4:
-          Pickups.add(obj.num, obj.apply, obj.x, obj.y);
-          break;
-        case 5:
-          Pickups.effect(obj.id, obj.num, obj.apply);
-          break;
-        case 6:
-          App.scores[obj.id] = App.scores[obj.id] + 1 || 1;
-          App.state = 0;  // after match;
-          App.last_win = obj.id;
-          break;
-        case 7: // invert pickup
-          Pickups.disEffect(obj.id, obj.num, obj.apply);
-          break;
-        }
+        App.restartMatch();
+        break;
+      case 4:
+        Pickups.add(obj.num, obj.apply, obj.x, obj.y);
+        break;
+      case 5:
+        Pickups.effect(obj.id, obj.num, obj.apply);
+        break;
+      case 6:
+        App.scores[obj.id] = App.scores[obj.id] + 1 || 1;
+        App.state = 0;  // after match;
+        App.last_win = obj.id;
+        break;
+      case 7: // invert pickup
+        Pickups.disEffect(obj.id, obj.num, obj.apply);
+        break;
       }
     }
   },
@@ -160,8 +173,6 @@ var Client = {
         sendDir = -1;
       }
     }
-
-
 
     this.appendQueue({
       type: 1,
