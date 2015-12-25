@@ -4,33 +4,28 @@
 var PROT = [
   // 0: who am I
   {
-   size: 9,
+   size: 5,
    id: 'Uint32',
    state: 'Uint8',
-   time: 'Uint32'
   },
-  // 1: who presses key in which direction
-  {
-    size: 17,
-    id: 'Uint32',
-    dir: 'Int8',
-    time: 'Uint32',
-    gap: 'Uint32',
-    next_gap: 'Uint32'
-  },
-  // 2: start position of a actor
+  // 1: update position
   {
     size: 20,
     x: 'Float32',
     y: 'Float32',
     rot: 'Float32',
     id: 'Uint32',
-    time: 'Uint32'
+    state: 'Uint8'
+  },
+  // 2: client to server update of key
+  {
+    size: 1,
+    dir: 'Int8'
   },
   // 3: single "match will start" flag
   {
     size: 4,
-    time: 'Uint32'
+
   },
   // 4: add a new pickup (pickup spawn)
   {
@@ -39,7 +34,7 @@ var PROT = [
     y: 'Float32',
     num: 'Uint8',
     apply: 'Uint8',
-    time: 'Uint32'
+
   },
   // 5: collect a pickup
   {
@@ -47,13 +42,13 @@ var PROT = [
     id: 'Uint32',
     num: 'Uint8',
     apply: 'Uint8',
-    time: 'Uint32'
+
   },
   // 6: score a point
   {
     size: 8,
     id: 'Uint32',
-    time: 'Uint32'
+
   },
   // 7: diseffect (reverts 5)
   {
@@ -61,72 +56,69 @@ var PROT = [
     id: 'Uint32',
     num: 'Uint8',
     apply: 'Uint8',
-    time: 'Uint32'
+
   }
 
 ];
 
 var Structure = {
-  parse: function(ab, callback) {
+  parse: function(ab) {
     if (ab instanceof ArrayBuffer) {
       //is already array buffer
     } else {
       ab = this.toArrayBuffer(ab)
     }
-
     var dv = new DataView(ab);
-    var ret = [];
     var length = ab.byteLength;
-
     var ind = 0;
-    while(ind < length) { // support for multiple messages per package
-      var type = dv.getUint8(ind++, true);
-      var p_id = dv.getUint32(ind, true);
-      ind += 4;
-      if(type < 0 || type >= PROT.length) {
-        console.log("unsupported type ", type);
-        return;
-      }
 
-      var prot = PROT[type];
-      var obj = {type: type, p_id: p_id};
+    var type = dv.getUint8(ind, true);  ind += 1;
+    var p_id = dv.getUint32(ind, true); ind += 4;
+    var time = dv.getUint32(ind, true); ind += 4;
 
-      for(var key in prot) {  //no prototype assigned
-        if(key == 'size') continue;
-        var val;
-        switch(prot[key]) {
-          case 'Uint8':
-            val = dv.getUint8(ind++, true);
-            break;
-          case 'Int8':
-            val = dv.getInt8(ind++, true);
-            break;
-          case 'Uint32':
-            val = dv.getUint32(ind, true);
-            ind += 4;
-            break;
-          case 'Float32':
-            val = dv.getFloat32(ind, true);
-            ind += 4;
-            break;
-          case 'Str10':   //10 character in 2 bytes each
-            var val = "";
-            for(var i = 0; i < 10; i++) {
-              var code = dv.getUint16(ind);
-              ind += 2;
-              if(code != 0) {
-                val += String.fromCharCode(code);
-              }
-            }
-            break;
-          default:
-            console.log("unsupported data type");
-        }
-        obj[key] = val;
-      }
-      ret.push(obj);
+    if(type < 0 || type >= PROT.length) {
+      console.log("unsupported type ", type);
+      return;
     }
-    callback(ret);
+
+    var prot = PROT[type];
+    var obj = {type: type, p_id: p_id, time: time};
+
+    for(var key in prot) {  //no prototype assigned
+      if(key == 'size') continue;
+      var val;
+      switch(prot[key]) {
+        case 'Uint8':
+          val = dv.getUint8(ind++, true);
+          break;
+        case 'Int8':
+          val = dv.getInt8(ind++, true);
+          break;
+        case 'Uint32':
+          val = dv.getUint32(ind, true);
+          ind += 4;
+          break;
+        case 'Float32':
+          val = dv.getFloat32(ind, true);
+          ind += 4;
+          break;
+        case 'Str10':   //10 character in 2 bytes each
+          var val = "";
+          for(var i = 0; i < 10; i++) {
+            var code = dv.getUint16(ind);
+            ind += 2;
+            if(code != 0) {
+              val += String.fromCharCode(code);
+            }
+          }
+          break;
+        default:
+          console.log("unsupported data type");
+      }
+      obj[key] = val;
+
+    }
+    return obj;
   },
 
   // concatenate two array buffers
@@ -150,11 +142,12 @@ var Structure = {
     }
 
     var prot = PROT[type];
-    var ab = new ArrayBuffer(prot.size + 5);  // per default each package has a type and a p_id
+    var ab = new ArrayBuffer(prot.size + 9);  // per default each package has a type and a p_id and a timestamp
     var dv = new DataView(ab);
-    dv.setUint8(0, type);
-    dv.setUint32(1, obj.p_id, true);
-    var ind = 5;
+    var ind = 0;
+    dv.setUint8(ind, type);           ind += 1;
+    dv.setUint32(1, obj.p_id, true);  ind += 4;
+    dv.setUint32(5, obj.time, true);  ind += 4;
 
     for(var key in prot) {  //no prototype assigned
       if(key == 'size') continue;

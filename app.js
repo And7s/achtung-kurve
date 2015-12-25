@@ -3,7 +3,7 @@ var App = {
 };
 var Field = {};
 
-var DEBUG = false;
+var DEBUG = true;
 
 App.canvas = document.getElementById('c');
 
@@ -64,7 +64,7 @@ App.resize = function() {
 
 
   Field.ctx = Field.canvas.getContext('2d');
- // Field.ctx.scale(App.pixelratio, App.pixelratio *2);
+  //Field.ctx.scale(1/App.pixelratio, 1/App.pixelratio);
   Field.offset_x = 7,
   Field.offset_y = (size - Field.size) / 2;
 
@@ -73,125 +73,18 @@ App.resize = function() {
 
 
 App.render = function() {
-  // count FPS
-  App.stats.fps.cur_fps++;
-
-  var now = getTime();
-  if (now > App.stats.fps.time) {
-    App.stats.fps.time += 1000;
-    App.stats.fps.fps = App.stats.fps.cur_fps;
-    App.stats.fps.cur_fps = 0;
-    // reset other
-
-    App.stats.show = {
-      msg_recv: App.stats.msg_recv,
-      msg_max: App.stats.msg_max,
-      msg_diff: App.stats.msg_diff,
-      msg_apply: App.stats.msg_apply,
-      packages_recv: App.stats.packages_recv
-    };
-    App.stats.msg_recv = 0;
-    App.stats.msg_max = 0;
-    App.stats.msg_diff = 0;
-    App.stats.msg_apply = 0;
-    App.stats.packages_recv = 0;
-
-  }
-
+  App.ctx.clearRect(0, 0, App.width, App.height);
   for(var i = 0; i < 256; i++) {
     if(Key.down(i)) {
       //console.log("down ", i);
     }
   }
-
-
-  Menu.render();
-
-  // clear
-  App.ctx.clearRect(0, 0, App.width, App.height);
-
-  Client.update();
-  Pickups.draw(16);
-  Particles.render(16);
-
+  Client.push();
   App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
-
-  // draw the border
-  App.ctx.beginPath();
-  App.ctx.lineWidth = 5;
-  if(Field.trans) {
-    App.ctx.strokeStyle = "#0F0";
-  }else {
-    App.ctx.strokeStyle = "#F00";
-  }
-
-
-  App.ctx.rect(Field.offset_x - 2.5, Field.offset_y -2.5, Field.size+5 , Field.size+5 );
-  App.ctx.stroke();
-  App.ctx.closePath();
-
-  // draw head
-
-  for(var it in App.actors) {
-    // which color should you be drawn
-    var color = '#FFF'; // default color
-    var size = 3;
-    if (App.actors[it].getInvert())  { color = '#00F'; size++; }
-    if (App.actors[it].getInvincible()) { color = '#0F0';  size++; }
-    if (App.actors[it].getNoControl()) { color = '#F00';  size++; }
-
-    App.ctx.fillStyle = color;
-   if(App.state == 1) {
-      if(it == Client.getId()) {
-        size = Ease.spawningSelf(App.time, 3, 9, 2000);
-      }
-    }
-    App.ctx.beginPath();
-    if (!App.actors[it].get90Deg()) {
-      App.ctx.arc(
-        App.actors[it].getX() * Field.size + Field.offset_x,
-        App.actors[it].getY() * Field.size + Field.offset_y,
-        size * App.scale,
-        0,
-        2 * Math.PI
-      );
-    } else {
-      size += 2;
-      App.ctx.fillRect(
-        App.actors[it].getX() * Field.size + Field.offset_x - size * App.scale / 2,
-        App.actors[it].getY() * Field.size + Field.offset_y - size * App.scale / 2,
-        size * App.scale,
-        size * App.scale
-      );
-    }
-
-    App.ctx.fill();
-    App.ctx.closePath();
-  }
-
-  // draw mask
-  /*
-  if(DEBUG) {
-    App.ctx.fillStyle="#0F0";
-    for(var i = 0; i < App.maskRes; i++) {
-      for(var j = 0; j < App.maskRes; j++) {
-        if(App.mask[j* App.maskRes + i]) {
-          App.ctx.fillRect(App.width - App.maskRes + i, App.height - App.maskRes + j, 1, 1 );
-        }
-      }
-    }
-  }*/
-
-  window.requestAnimationFrame(App.render);
-  //setTimeout(App.render, 16)
+  //window.requestAnimationFrame(App.render);
+  setTimeout(App.render, 50)
 };
 
-App.dispatchEvent = function(obj) {
-  //App.time = obj.time;
-  for(var it in App.actors) {
-    App.actors[it].dispatchEvent(obj);
-  }
-};
 
 App.restartMatch = function() {
   Field.trans = DEBUG;
@@ -210,14 +103,6 @@ App.clearField = function() {
   }
 }
 
-App.setActor = function(obj) {
-  if(!App.actors[obj.id]) {
-    console.log("create new actor");
-    App.actors[obj.id] = new Actor(obj.id);
-  }
-  App.actors[obj.id].respawn(obj);
-
-};
 
 var COLORS = [
   '#f00',
