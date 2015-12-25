@@ -9,6 +9,7 @@ function User(ws, id) {
   this.last_message = getTime();
   this.rotSpeed = 4E-3;
   this.size = 5;
+  this.state = ACTOR_WAITING;
   var that = this;
   console.log('new user conencted');
 
@@ -19,7 +20,7 @@ function User(ws, id) {
 
   var welcome = Structure.pack({
     id: this.id,
-    state: 0,
+    state: this.state,
     p_id: Server.p_id++,
     time: Server.updateTime()
   }, 0);
@@ -30,7 +31,9 @@ function User(ws, id) {
     var obj = Structure.parse(message);
     // console.log('recv', obj);
 
+
     that.update(obj.dir);
+
     that.broadcast();
 
   });
@@ -41,10 +44,24 @@ function User(ws, id) {
   });
 
   this.update = function(dir) {
+    console.log('update');
     var now = getTime();
     var dt = now - this.time;
     if (dt <= 0) return; // avoid divide by zero
     this.time = now;
+
+
+    if (this.state == ACTOR_PLAYING) {
+      this.dispatchInput(dir, dt);
+    } else if (this.state == ACTOR_SPAWNING) {
+      this.dispatchInput(0, dt / 4);
+    } else {
+      // do nothing
+    }
+  };
+
+  // let the user control
+  this.dispatchInput = function(dir, dt) {
     var col_checks = 0;
     var num = Math.ceil(dt / 10),   // apply change in time slots of 10ms
         dx, dy;
@@ -90,12 +107,16 @@ function User(ws, id) {
       if (!collide) {
         this.x += dx;
         this.y += dy;
-      }
+        this.x = (this.x + 1) % 1;
+        this.y = (this.y + 1) % 1
 
-      this.x = (this.x + 1) % 1;
-      this.y = (this.y + 1) % 1;
+      } else {
+        break;
+      }
     }
-    console.log('checked '+ col_checks);
+    if (collide) {
+      this.die();
+    }
   };
 
   this.broadcast = function() {
@@ -104,7 +125,7 @@ function User(ws, id) {
       y: that.y,
       rot: that.rot,
       id: that.id,
-      state: 0,
+      state: that.state,
       p_id: Server.p_id++,
       time: Server.updateTime()
     }, 1));
@@ -123,4 +144,12 @@ function User(ws, id) {
       }
     }, delay);
   };
+
+  this.die = function() {
+    if (this.state == ACTOR_DEAD) return;
+    this.state = ACTOR_DEAD;
+    // communicate im dead : needed ??
+
+    Match.reconsider();
+  }
 };

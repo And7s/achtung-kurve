@@ -28,18 +28,21 @@ var Client = {
   },
 
   processMessage: function(obj) {
-console.log(obj);
+    console.log(obj);
     switch(obj.type) {
       case 0:   // welcome new user
         console.log('new actor');
         App.actors[obj.id] = new Actor(obj);
       break;
       case 1:   // update position
-
+        if (!App.actors[obj.id]) {
+          App.actors[obj.id] = new Actor(obj);
+        }
         App.actors[obj.id].dispatchEvent(obj);
-
-
       break;
+      case 3:   // new Match
+        App.restartMatch();
+        break;
 
     }
   },

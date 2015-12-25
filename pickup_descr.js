@@ -1,4 +1,4 @@
-// this file describes which pickups exist and how often they spawn, 
+// this file describes which pickups exist and how often they spawn,
 // the effect itself is determined by pickup.js
 var PICKUP = [
   {
@@ -45,4 +45,5 @@ var PICKUP = [
 var ACTOR_WAITING = 0,
   ACTOR_PLAYING = 1,
   ACTOR_DEAD = 2,
-  ACTOR_WATCHING = 3;
+  ACTOR_WATCHING = 3,
+  ACTOR_SPAWNING = 4;

@@ -25,6 +25,13 @@ var Server = {
     for (var it in Server.all_user) {
       Server.all_user[it].send(obj);
     }
+  },
+
+  restart: function() {
+    Hist = [];
+    this.time = getTime();
+    this.updateTime();
+    this.broadcast(Structure.pack({}, 3));
   }
 };
 
@@ -32,6 +39,8 @@ Server.wss.on('connection', function(ws) {
   var user = new User(ws, Server.connections);// create a new User
   Server.all_user[Server.connections] = user;
   Server.connections++;
+
+  Match.reconsider();
 });
 
 

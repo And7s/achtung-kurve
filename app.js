@@ -81,8 +81,8 @@ App.render = function() {
   }
   Client.push();
   App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
-  //window.requestAnimationFrame(App.render);
-  setTimeout(App.render, 50)
+  window.requestAnimationFrame(App.render);
+  //setTimeout(App.render, 50)
 };
 
 
