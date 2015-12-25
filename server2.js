@@ -34,6 +34,19 @@ Server.wss.on('connection', function(ws) {
 
 
 var Hist = [];
+var App = {
+  maskRes: 500
+};
+
+App.mask = new Uint8Array(App.maskRes * App.maskRes);
+
+// on match start
+var L = App.maskRes * App.maskRes;
+for(var i = 0; i < L; i++) {
+  App.mask[i] = 0;
+}
+
+
 function User(ws, id) {
   this.x = 0.5;
   this.y = 0.5;
@@ -77,19 +90,60 @@ function User(ws, id) {
 
   this.update = function(dir) {
     var now = getTime();
-    var diff = now - this.time;
-    if (diff <= 0) return; // avoid divide by zero
+    var dt = now - this.time;
+    if (dt <= 0) return; // avoid divide by zero
     this.time = now;
+    var col_checks = 0;
+    var num = Math.ceil(dt / 10),   // apply change in time slots of 10ms
+        dx, dy;
+    for (var n = 0; n < num; n++) {
+      this.rot += dir * dt * this.rotSpeed / num;
+      dx = Math.cos(this.rot) * dt * this.speed / num;
+      dy = Math.sin(this.rot) * dt * this.speed / num;
 
-    var num = Math.ceil(diff / 10);
-    for (var i = 0; i < num; i++) {
-      this.rot += dir * diff * this.rotSpeed / num;
-      this.x += Math.cos(this.rot) * diff * this.speed / num;
-      this.y += Math.sin(this.rot) * diff * this.speed / num;
+      var collide = false;
+      // collision check
+      for (var i = -Math.PI; i <= Math.PI; i+= Math.PI / 10) {
+
+        // i set the mask at the inner bounds, the actual size
+        var sx =  Math.cos(this.rot + i) * this.size + this.x * App.maskRes ,
+            sy =  Math.sin(this.rot + i) * this.size + this.y * App.maskRes ;
+
+         //console.log("set "+sx+" "+sy+" "+ Math.round(sx)+" "+Math.round(sy));
+        // dont check the outer angels, causes false in at rotating
+        if (i > -Math.PI / 2.1 && i < Math.PI / 2.1) { // check forwards half
+          // this calculates where the pixels whould be drawn ont he reference resolution
+          // i will check one pixel more than the radius itself
+          // add 1.5 more, so it wont get round in the wrong direction twice(negelcted)
+
+           var cx =  Math.cos(this.rot + i) * (this.size + 1.5) + (this.x + dx / dt) * App.maskRes,
+               cy =  Math.sin(this.rot + i) * (this.size + 1.5) + (this.y + dy / dt) * App.maskRes;
+          // console.log("check "+cx+" "+cy);
+          cx = Math.round(cx);
+          cy = Math.round(cy);
+
+          if (cx >= 0 && cx < App.maskRes && cy >= 0 && cy < App.maskRes) {  // avoid out of bounds
+            if (App.mask[cy * App.maskRes + cx] == 1) {
+              console.log("collide");
+              collide = true;
+            }
+          }
+          col_checks++;
+        } else if( i < -Math.PI / 2 || i > Math.PI / 2) {  // set behind
+          // set the mask, where someone has been
+          App.mask[Math.round(sy) * App.maskRes + Math.round(sx)] = 1;
+        }
+      }
+
+      if (!collide) {
+        this.x += dx;
+        this.y += dy;
+      }
 
       this.x = (this.x + 1) % 1;
       this.y = (this.y + 1) % 1;
     }
+    console.log('checked '+ col_checks);
   };
 
   this.broadcast = function() {
