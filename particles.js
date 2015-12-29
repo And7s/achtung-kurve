@@ -9,7 +9,6 @@ var Particles = {
         this.arr[i] = this.arr[this.arr.length - 1];
         this.arr.pop();
         i--;
-        console.log("die");
         continue;
       }
       part.x += part.vx * dt / 1000;

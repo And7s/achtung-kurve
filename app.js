@@ -25,7 +25,7 @@ App.stats = {
 App.init = function(images) {
   console.log(images);
   App.maskRes = 500;
-  App.state = 0;  // 0: before game, 1: awaking, 2: playing
+  App.state = GAME_STOP;
   App.last_win = -1;
   Menu.init();
   App.resize();
@@ -80,6 +80,7 @@ App.render = function() {
     }
   }
   Client.push();
+  Particles.render(16);
   App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
     for (var it in App.actors) {
     App.actors[it].drawHead();
@@ -95,7 +96,7 @@ App.restartMatch = function() {
   Field.trans = DEBUG;
   App.actors = {};
   Pickups.arr = [];
-  App.state = 1;
+  App.state = GAME_SPAWNING;
   App.clearField();
 };
 

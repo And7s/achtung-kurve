@@ -184,6 +184,7 @@ function User(ws, id) {
   };
 
   this.die = function() {
+    console.log('dying ' + this.state);
     if (this.state == ACTOR_DEAD) return;
     this.state = ACTOR_DEAD;
     // communicate im dead : needed ??

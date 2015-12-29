@@ -8,7 +8,7 @@ var ActorShared = {
   speed: 2E-4,
   rotSpeed: 4E-3,
   isInvert: false,
-  isInvincible: DEBUG,
+  isInvincible: false,
   isNoControl: false,
   is90Deg: false,
   isInvisible: false,
@@ -57,6 +57,12 @@ var Actor = function(obj) {
 
   this.dispatchEvent = function(obj) {
     this.isGap = obj.isGap;
+    console.log(this.id + 'state ' + this.state);
+    if (this.state == ACTOR_PLAYING && obj.state == ACTOR_DEAD) {
+      // add explosion
+      Particles.add(this.x, this.y);
+    }
+    this.state = obj.state;
     // render the diff
     var diff = obj.time - this.time;
     this.time = obj.time;
@@ -74,7 +80,7 @@ var Actor = function(obj) {
 
       this.x = (this.x + 1) % 1;
       this.y = (this.y + 1) % 1;
-      if (!this.isGap && this.isInvisible) {
+      if (!this.isGap && !this.isInvisible) {
         Field.ctx.beginPath();
         Field.ctx.arc(
           this.x * Field.size,
@@ -96,7 +102,10 @@ var Actor = function(obj) {
 
   this.drawHead = function() {
     // which color should you be drawn
-
+    if (this.state == ACTOR_DEAD) {
+      // dont draw heads of dead player
+      return;
+    }
     // console.log('draw HEAD');
     var color = '#FFF'; // default color
     var size = 3;

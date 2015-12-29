@@ -43,7 +43,12 @@ var PICKUP = [
 // states descriptions
 
 var ACTOR_WAITING = 0,
-  ACTOR_PLAYING = 1,
-  ACTOR_DEAD = 2,
-  ACTOR_WATCHING = 3,
-  ACTOR_SPAWNING = 4;
+    ACTOR_PLAYING = 1,
+    ACTOR_DEAD = 2,
+    ACTOR_WATCHING = 3,
+    ACTOR_SPAWNING = 4;
+
+var GAME_STOP = 0,
+    GAME_SPAWNING = 1,
+    GAME_PLAYING = 2,
+    GAME_OVER = 3;

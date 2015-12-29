@@ -1,10 +1,13 @@
 //websocket server
 var fs = require('fs');
 
+eval(fs.readFileSync('../pickup_descr.js', 'utf8'));
+
 var DEBUG = true;
 var App = {
   actors: {},
   maskRes: 500,
+  state: GAME_STOP,
   clearField: function() {
     // clear field (mask)
     var L = App.maskRes * App.maskRes;
@@ -22,7 +25,6 @@ var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
 eval(fs.readFileSync('../structure.js', 'utf8'));
 eval(fs.readFileSync('match.js', 'utf8'));
 eval(fs.readFileSync('user.js', 'utf8'));
-eval(fs.readFileSync('../pickup_descr.js', 'utf8'));
 eval(fs.readFileSync('../pickup.js', 'utf8'));
 eval(fs.readFileSync('../actor.js', 'utf8'));
 var WebSocketServer = require('ws').Server;

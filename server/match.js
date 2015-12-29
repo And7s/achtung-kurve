@@ -11,7 +11,6 @@ var Match = {
     // inform the user
     Server.restart();
     Pickups.arr = [];
-    Match.next_pickup = Math.random() * 200; //2000 + Math.random() * 4000;
 
     App.clearField();
 
@@ -41,33 +40,46 @@ var Match = {
       user.y = y + 0.5;
       user.rot = angle;
       user.isInvert = false;
-      user.isInvincible = DEBUG;
+      user.isInvincible = false;
       user.isNoControl = false;
-      user.is90Deg = DEBUG;
+      user.is90Deg = false;
       user.isInvisible = false;
       user.speed = 2E-4;
       user.state = ACTOR_SPAWNING;
 
-      // take care of scope (user reused in next loop iteration)
-      setTimeout(function(user) {
-        console.log('user is now playing');
-        user.state = ACTOR_PLAYING;
-      }, 2000, user);
-
       user.broadcast();
+    }
+
+    setTimeout(function() {
+      Match.afterSpawn();
+    }, 2000);
+  },
+
+  afterSpawn: function() {
+    App.state = GAME_PLAYING;
+    Match.next_pickup = Server.now + Math.random() * 2000; //2000 + Math.random() * 4000;
+    for (var it in App.actors) {
+      App.actors[it].state = ACTOR_PLAYING;
     }
   },
 
   reconsider: function() {
     console.log('reconsider');
-    Match.restart();
+    // TODO: add some checks
+    // TODO: some notification to the clients
+    // TODO: set states properly
+    App.state = GAME_OVER;
+    setTimeout(function() {
+      Match.restart();
+    }, 2000);
+
   },
 
   update: function() {
     Server.updateTime();
 
     // gaps
-    if (Match.next_pickup <= Server.now && Match.state != 0) {
+    if (Match.next_pickup <= Server.now && App.state == GAME_PLAYING) {
       Match.addPickup();
     }
   },
