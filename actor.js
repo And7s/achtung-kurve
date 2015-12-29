@@ -7,6 +7,11 @@ var Actor = function(obj) {
   this.time = obj.time;
   this.speed = 2E-4;
   this.rotSpeed = 4E-3;
+  this.isInvert = false;
+  this.isInvincible = false;
+  this.isNoControl = false;
+  this.is90Deg = false;
+
   this.dispatchEvent = function(obj) {
     // render the diff
     var diff = obj.time - this.time;
@@ -41,5 +46,42 @@ var Actor = function(obj) {
     this.x = obj.x;
     this.y = obj.y;
 
+  };
+
+  this.drawHead = function() {
+    // which color should you be drawn
+
+    // console.log('draw HEAD');
+    var color = '#FFF'; // default color
+    var size = 3;
+    if (this.isInvert)  { color = '#00F'; size++; }
+    if (this.isInvincible) { color = '#0F0'; size++; }
+    if (this.isNoControl) { color = '#F00'; size++; }
+
+    App.ctx.fillStyle = color;
+    if (App.time <= 2000) { // spawning
+      size = Ease.spawningSelf(App.time, 3, 9, 2000);
+    }
+    App.ctx.beginPath();
+    if (!this.is90Deg) {
+      App.ctx.arc(
+        this.x * Field.size + Field.offset_x,
+        this.y * Field.size + Field.offset_y,
+        size * App.scale,
+        0,
+        2 * Math.PI
+      );
+    } else {
+      size += 2;
+      App.ctx.fillRect(
+        this.x * Field.size + Field.offset_x - size * App.scale / 2,
+        this.y * Field.size + Field.offset_y - size * App.scale / 2,
+        size * App.scale,
+        size * App.scale
+      );
+    }
+
+    App.ctx.fill();
+    App.ctx.closePath();
   };
 };

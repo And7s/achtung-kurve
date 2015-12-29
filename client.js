@@ -28,7 +28,8 @@ var Client = {
   },
 
   processMessage: function(obj) {
-    console.log(obj);
+    // console.log(obj);
+    App.time = obj.time;
     switch(obj.type) {
       case 0:   // welcome new user
         console.log('new actor');

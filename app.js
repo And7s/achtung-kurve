@@ -81,6 +81,9 @@ App.render = function() {
   }
   Client.push();
   App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
+    for (var it in App.actors) {
+    App.actors[it].drawHead();
+  }
   window.requestAnimationFrame(App.render);
   //setTimeout(App.render, 50)
 };
