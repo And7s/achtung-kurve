@@ -10,12 +10,13 @@ var PROT = [
   },
   // 1: update position
   {
-    size: 17,
+    size: 18,
     x: 'Float32',
     y: 'Float32',
     rot: 'Float32',
     id: 'Uint32',
-    state: 'Uint8'   // state of the actor (playing, spawning, etc)
+    state: 'Uint8',   // state of the actor (playing, spawning, etc)
+    isGap: 'Uint8'
   },
   // 2: client to server update of key
   {

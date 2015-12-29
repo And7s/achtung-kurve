@@ -1,6 +1,3 @@
-var App = {
-  maskRes: 500
-};
 
 App.mask = new Uint8Array(App.maskRes * App.maskRes);
 
@@ -16,17 +13,13 @@ var Match = {
     Pickups.arr = [];
     Match.next_pickup = Math.random() * 200; //2000 + Math.random() * 4000;
 
-    // clear field (mask)
-    var L = App.maskRes * App.maskRes;
-    for (var i = 0; i < L; i++) {
-      App.mask[i] = 0;
-    }
+    App.clearField();
 
-    var num_users = Object.keys(Server.all_user).length;
+    var num_users = Object.keys(App.actors).length;
     //console.log("num user", num_users);
     var count = Math.random() * num_users;  // rotation where to start
 
-    for (var it in Server.all_user) {
+    for (var it in App.actors) {
       //var x = Math.random() - 0.5;
       //var y = Math.random() - 0.5;
       var x = Math.sin(2 * Math.PI / num_users * count) * 0.5;
@@ -42,15 +35,17 @@ var Match = {
       }
       angle += Math.PI; // direct angle TO the center
       //angle += Math.random() * Math.PI / 2 - Math.PI / 4;   // max. 45^jitter
-      var user = Server.all_user[it];
+      var user = App.actors[it];
 
       user.x = x + 0.5;
       user.y = y + 0.5;
       user.rot = angle;
       user.isInvert = false;
-      user.isInvincible = false;
+      user.isInvincible = DEBUG;
       user.isNoControl = false;
-      user.is90Deg = false;
+      user.is90Deg = DEBUG;
+      user.isInvisible = false;
+      user.speed = 2E-4;
       user.state = ACTOR_SPAWNING;
 
       // take care of scope (user reused in next loop iteration)

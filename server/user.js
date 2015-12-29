@@ -6,6 +6,8 @@ function User(ws, id) {
   this.id = id;
   this.time = getTime();
   this.last_message = getTime();
+  this.next_gap = getTime();
+  this.last_dir = 0;
 
   var that = this;
   console.log('new user conencted');
@@ -33,12 +35,20 @@ function User(ws, id) {
 
   ws.on('close', function() {
     console.log('connection closed to '+  that.id);
-    delete Server.all_user[that.id];
+    delete App.actors[that.id];
   });
 
   this.update = function(dir) {
-    console.log('update');
     var now = getTime();
+    if (!this.isGap && now >= this.next_gap) {
+      // switch to gap
+      this.isGap = true;
+      this.next_gap = now + 300 + 700 * Math.random();  // how long th gap will last
+    } else if (this.isGap && now >= this.next_gap) {
+      this.isGap = false;
+      this.next_gap = now + 500 + 1500  * Math.random(); // when the next gap will come
+    }
+
     var dt = now - this.time;
     if (dt <= 0) return; // avoid divide by zero
     this.time = now;
@@ -55,6 +65,20 @@ function User(ws, id) {
 
   // let the user control
   this.dispatchInput = function(dir, dt) {
+    if (this.is90Deg) {
+      if (this.last_dir != dir) {
+        // turn 90 deg
+        this.rot += Math.PI * dir / 2;
+      }
+      this.last_dir = dir;
+      dir = 0;  // dont allow any other curves
+    }
+    if (this.isNoControl) {
+      dir = 0;
+    }
+    if (this.isInvert) {
+      dir = -dir;
+    }
     var col_checks = 0;
     var num = Math.ceil(dt / 10),   // apply change in time slots of 10ms
         dx, dy;
@@ -71,7 +95,7 @@ function User(ws, id) {
         var sx =  Math.cos(this.rot + i) * this.size + this.x * App.maskRes ,
             sy =  Math.sin(this.rot + i) * this.size + this.y * App.maskRes ;
 
-         //console.log("set "+sx+" "+sy+" "+ Math.round(sx)+" "+Math.round(sy));
+        //console.log("set "+sx+" "+sy+" "+ Math.round(sx)+" "+Math.round(sy));
         // dont check the outer angels, causes false in at rotating
         if (i > -Math.PI / 2.1 && i < Math.PI / 2.1) { // check forwards half
           // this calculates where the pixels whould be drawn ont he reference resolution
@@ -91,23 +115,26 @@ function User(ws, id) {
             }
           }
           col_checks++;
-        } else if( i < -Math.PI / 2 || i > Math.PI / 2) {  // set behind
+        } else if ( i < -Math.PI / 2 || i > Math.PI / 2) {  // set behind
           // set the mask, where someone has been
-          App.mask[Math.round(sy) * App.maskRes + Math.round(sx)] = 1;
+          if (!this.isGap && !this.isInvisible) {
+            App.mask[Math.round(sy) * App.maskRes + Math.round(sx)] = 1;
+          }
         }
       }
 
-      if (!collide) {
+      // if a collision is spotted, that will get handled, abort moving
+      if (this.isInvincible || !collide) {
         this.x += dx;
         this.y += dy;
         this.x = (this.x + 1) % 1;
-        this.y = (this.y + 1) % 1
+        this.y = (this.y + 1) % 1;
 
       } else {
         break;
       }
     }
-    if (collide) {
+    if (!this.isInvincible && collide) {
       this.die();
     }
     // collide with pickups
@@ -137,7 +164,8 @@ function User(ws, id) {
       id: that.id,
       state: that.state,
       p_id: Server.p_id++,
-      time: Server.updateTime()
+      time: Server.updateTime(),
+      isGap: that.isGap
     }, 1));
   };
 

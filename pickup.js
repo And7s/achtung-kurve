@@ -36,7 +36,6 @@ var Pickups = {
         obj.time += dt;
         if (obj.time <= 200) {
           scale *= (1 + obj.time / 200);
-          console.log('obj scale ', scale);
           App.ctx.globalAlpha = 1 - obj.time / 200;
         } else {
           // dont draw anymore, but downt remove, as the effect is still active
