@@ -6,7 +6,10 @@ eval(fs.readFileSync('../structure.js', 'utf8'));
 eval(fs.readFileSync('match.js', 'utf8'));
 eval(fs.readFileSync('user.js', 'utf8'));
 eval(fs.readFileSync('../pickup_descr.js', 'utf8'));
+eval(fs.readFileSync('../pickup.js', 'utf8'));
+eval(fs.readFileSync('../actor.js', 'utf8'));
 var WebSocketServer = require('ws').Server;
+var __ = require('underscore');
 
 var Server = {
   wss: new WebSocketServer({port: 8080}),

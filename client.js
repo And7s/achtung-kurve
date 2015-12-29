@@ -44,7 +44,15 @@ var Client = {
       case 3:   // new Match
         App.restartMatch();
         break;
-
+      case 4: // add pickup
+        Pickups.add(obj);
+        break;
+      case 5:  // collect pickup (effect)
+        Pickups.effect(obj);
+        break;
+      case 7:   // diseffect (remove pickup)
+        Pickups.disEffect(obj);
+        break;
     }
   },
 

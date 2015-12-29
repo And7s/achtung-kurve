@@ -7,16 +7,18 @@ App.mask = new Uint8Array(App.maskRes * App.maskRes);
 // on match start
 
 var Match = {
+  next_pickup: 0,
 
   restart: function() {
     console.log('restart');
     // inform the user
-
     Server.restart();
+    Pickups.arr = [];
+    Match.next_pickup = Math.random() * 200; //2000 + Math.random() * 4000;
 
     // clear field (mask)
     var L = App.maskRes * App.maskRes;
-    for(var i = 0; i < L; i++) {
+    for (var i = 0; i < L; i++) {
       App.mask[i] = 0;
     }
 
@@ -24,7 +26,7 @@ var Match = {
     //console.log("num user", num_users);
     var count = Math.random() * num_users;  // rotation where to start
 
-    for(var it in Server.all_user) {
+    for (var it in Server.all_user) {
       //var x = Math.random() - 0.5;
       //var y = Math.random() - 0.5;
       var x = Math.sin(2 * Math.PI / num_users * count) * 0.5;
@@ -35,7 +37,7 @@ var Match = {
       count++;
 
       var angle = Math.atan(y / x);
-      if(x < 0 ) {
+      if (x < 0 ) {
         angle = Math.PI + angle;
       }
       angle += Math.PI; // direct angle TO the center
@@ -45,6 +47,10 @@ var Match = {
       user.x = x + 0.5;
       user.y = y + 0.5;
       user.rot = angle;
+      user.isInvert = false;
+      user.isInvincible = false;
+      user.isNoControl = false;
+      user.is90Deg = false;
       user.state = ACTOR_SPAWNING;
 
       // take care of scope (user reused in next loop iteration)
@@ -53,7 +59,6 @@ var Match = {
         user.state = ACTOR_PLAYING;
       }, 2000, user);
 
-
       user.broadcast();
     }
   },
@@ -61,6 +66,57 @@ var Match = {
   reconsider: function() {
     console.log('reconsider');
     Match.restart();
-  }
+  },
 
+  update: function() {
+    Server.updateTime();
+
+    // gaps
+    if (Match.next_pickup <= Server.now && Match.state != 0) {
+      Match.addPickup();
+    }
+  },
+
+  addPickup: function() {
+
+    // determine which pickup i should choose
+    console.log("new pickup");
+
+    var pickup_sum = 0;
+    for (var i = 0; i < PICKUP.length; i++) {
+      for (var j = 0; j < PICKUP[i].prop.length; j++) {
+        pickup_sum += PICKUP[i].prop[j];
+      }
+    }
+    console.log('probability of all pickups is ', pickup_sum);
+
+    var rand = Math.random() * pickup_sum;
+
+    var pick_item = (function() {
+      for (var i = 0; i < PICKUP.length; i++) {
+        for (var j = 0; j < PICKUP[i].prop.length; j++) {
+          rand -= PICKUP[i].prop[j];
+          if (rand <= 0) {
+            return {num: i, apply: j};
+          }
+        }
+      }
+    })();
+    console.log('pick item is ', pick_item);
+    var obj = {
+      x: Math.random(),
+      y: Math.random(),
+      num: pick_item.num,
+      apply: pick_item.apply,
+      id: Pickups.getNextId()
+    };
+
+    Pickups.add(obj);
+    Server.broadcast(Structure.pack(obj, 4));
+    Match.next_pickup = Server.now + Math.random() * 5000;
+  }
 };
+
+setInterval(function() {
+  Match.update()
+}, 66);

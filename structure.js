@@ -10,12 +10,12 @@ var PROT = [
   },
   // 1: update position
   {
-    size: 20,
+    size: 17,
     x: 'Float32',
     y: 'Float32',
     rot: 'Float32',
     id: 'Uint32',
-    state: 'Uint8'
+    state: 'Uint8'   // state of the actor (playing, spawning, etc)
   },
   // 2: client to server update of key
   {
@@ -34,15 +34,13 @@ var PROT = [
     y: 'Float32',
     num: 'Uint8',
     apply: 'Uint8',
-
+    id: 'Uint32'
   },
   // 5: collect a pickup
   {
-    size: 10,
-    id: 'Uint32',
-    num: 'Uint8',
-    apply: 'Uint8',
-
+    size: 8,
+    u_id: 'Uint32',
+    id: 'Uint32'
   },
   // 6: score a point
   {
@@ -52,11 +50,9 @@ var PROT = [
   },
   // 7: diseffect (reverts 5)
   {
-    size: 10,
+    size: 8,
     id: 'Uint32',
-    num: 'Uint8',
-    apply: 'Uint8',
-
+    u_id: 'Uint32'
   }
 
 ];

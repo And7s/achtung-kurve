@@ -1,15 +1,12 @@
 
 function User(ws, id) {
-  this.x = 0.5;
-  this.y = 0.5;
+  // create shallow copy of shared actor
+  __.extend(this, ActorShared);
+
   this.id = id;
-  this.rot = 0;
-  this.speed = 2E-4;
   this.time = getTime();
   this.last_message = getTime();
-  this.rotSpeed = 4E-3;
-  this.size = 5;
-  this.state = ACTOR_WAITING;
+
   var that = this;
   console.log('new user conencted');
 
@@ -30,12 +27,8 @@ function User(ws, id) {
   ws.on('message', function(message, flags) {
     var obj = Structure.parse(message);
     // console.log('recv', obj);
-
-
     that.update(obj.dir);
-
     that.broadcast();
-
   });
 
   ws.on('close', function() {
@@ -116,6 +109,23 @@ function User(ws, id) {
     }
     if (collide) {
       this.die();
+    }
+    // collide with pickups
+    var obj = Pickups.collide(this.x, this.y);
+    if (obj != false) {
+      obj.state = 2;  // avoid coliding multiple times
+      console.log('pickup ', obj);
+      // apply effect, remove pickup
+      obj.u_id = that.id;
+      Server.broadcast(Structure.pack(obj, 5));
+      Pickups.effect(obj);
+
+      // disefect
+      setTimeout(function(obj) {
+        console.log('disefect');
+        Pickups.disEffect(obj);
+        Server.broadcast(Structure.pack(obj, 7));
+      }, PICKUP[obj.num].dur, obj);
     }
   };
 

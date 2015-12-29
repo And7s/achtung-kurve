@@ -3,6 +3,7 @@ var Pickups = {
   arr: [],
   size: 0.5,  // at which factor the pickups are scaled
   real_size: 50, // the size of the images in px
+  id: 0,  // ongoing id (unique)
 
   collide: function(x, y) {
     var sizeSq = Math.pow(39 / App.maskRes * this.size, 2);
@@ -12,8 +13,6 @@ var Pickups = {
 
       var distSq = (obj.x - x) * (obj.x - x) + (obj.y - y) * (obj.y - y);
       if(distSq < sizeSq) { // if i am close enough
-        obj.state = 2;    // change the state to remove (animatino)
-        obj.time = 0;
         return obj; // return which one is collided
       }
     }
@@ -21,28 +20,27 @@ var Pickups = {
   },
 
   draw: function(dt) {
-    for(var i = 0; i < this.arr.length; i++) {
+    for (var i = 0; i < this.arr.length; i++) {
       var obj = this.arr[i];
       var scale = this.real_size * App.scale * this.size; // = 1
-      if(obj.state == 0) {  // spawning
+      if (obj.state == 0) {  // spawning
         obj.time += dt;
-        if(obj.time >= 1000) {
+        if (obj.time >= 1000) {
           obj.state = 1;
-        }else {
+        } else {
           scale *= Ease.easeOutBack(obj.time, 0, 1, 1000);
         }
-      }else if( obj.state == 1) { // alive
+      } else if( obj.state == 1) { // alive
 
-      }else if( obj.state == 2) { // fade out
+      } else if( obj.state == 2) { // fade out
         obj.time += dt;
-        if(obj.time >= 200) {
-          this.arr[i] = this.arr[this.arr.length - 1];  // remove from array and continue
-          this.arr.pop();
-          i--;
-          continue;
-        }else {
-          scale *= (1 + obj.time / 200)
+        if (obj.time <= 200) {
+          scale *= (1 + obj.time / 200);
+          console.log('obj scale ', scale);
           App.ctx.globalAlpha = 1 - obj.time / 200;
+        } else {
+          // dont draw anymore, but downt remove, as the effect is still active
+          continue;
         }
       }
 
@@ -59,7 +57,7 @@ var Pickups = {
 
       App.ctx.drawImage(
         App.img_pickup,
-        this.real_size * obj.type,
+        this.real_size * obj.num,
         0,
         this.real_size,
         this.real_size,
@@ -75,25 +73,58 @@ var Pickups = {
     }
   },
 
-  add: function(type, apply, x, y) {
-
+  add: function(obj) {
     this.arr.push({
-      x: x,
-      y: y,
-      type: type,
-      apply: apply,
-      state: 0,  // state: 0 spawgning state, 1: normal, 2: picked up
-      time: 0
+      x: obj.x,
+      y: obj.y,
+      num: obj.num,
+      apply: obj.apply,
+      state: 0,  // state: 0 spawning state, 1: normal, 2: picked up
+      time: 0,
+      id: obj.id
     });
   },
 
-  effect: function(id, type, apply) {
-    console.log("pickup "+ type + "picked up by"+id+" apply to "+apply);
+  getNextId: function() {
+    return this.id++;
+  },
+
+  getPickup: function(id) {
+    for (var i = 0; i < this.arr.length; i++) {
+      if (this.arr[i].id == id) {
+        return this.arr[i];
+      }
+    }
+    return false;
+  },
+
+  removePickup: function(id) {
+    for (var i = 0; i < this.arr.length; i++) {
+      if (this.arr[i].id == id) {
+        var ret = this.arr[i];
+        this.arr[i] = this.arr[this.arr.length - 1];  // remove from array and continue
+        this.arr.pop();
+        return ret;
+      }
+    }
+    return false;
+  },
+
+  effect: function(obj) {
+    var pickup = this.getPickup(obj.id);
+    if (!pickup) { console.log('pickup not found'); return; }
+    pickup.state = 2;
+    pickup.time = 0;
+
+    var num = pickup.num,
+        apply = pickup.apply;
+
+    console.log("pickup "+pickup.id + " num: "+ num + "picked up by"+obj.u_id+" apply to "+apply);
     for(var it in App.actors) {
-      if(apply == 2 ||                 // everyone
-        (apply == 1 && it != id) ||    // all but the player
-        (apply == 0 && id == it)) {    // only the player
-        switch(type) {
+      if(apply == 2 ||                    // everyone
+        (apply == 1 && it != obj.u_id) || // all but the player
+        (apply == 0 && obj.u_id == it)) {       // only the player
+        switch(num) {
           case 0: // delete lines
             // currently only delete all lines supported
             App.clearField();
@@ -122,21 +153,25 @@ var Pickups = {
           case 8: // speed
             App.actors[it].calcSpeed(2);
             break;
-
         }
       }
     }
-
   },
 
-  disEffect: function(id, type, apply) {
-    console.log("DisEffect pickup "+ type + "picked up by"+id+" apply to "+apply);
+  disEffect: function(obj) {
+    var pickup = this.removePickup(obj.id);
+    if (!pickup) { console.log('pickup not found'); return; }
+
+    var num = pickup.num,
+        apply = pickup.apply;
+
+    console.log("DisEffect pickup "+obj.id+" num: " + num + "picked up by" + obj.u_id + " apply to " + apply);
     for(var it in App.actors) {
-      if(apply == 2 ||                 // everyone
-        (apply == 1 && it != id) ||    // all but the player
-        (apply == 0 && id == it)) {    // only the player
-        console.log("apply to "+it);
-        switch(type) {
+      if (apply == 2 ||                 // everyone
+         (apply == 1 && it != obj.u_id) ||    // all but the player
+         (apply == 0 && obj.u_id == it)) {    // only the player
+        console.log("apply to " + it);
+        switch(num) {
           case 0: // delete lines
 
             break;

@@ -1,16 +1,58 @@
+var ActorShared = {
+  x: 0.5,
+  y: 0.5,
+  rot: 0,
+  id: 0,
+  size: 2,
+  time: 0,
+  speed: 2E-4,
+  rotSpeed: 4E-3,
+  isInvert: false,
+  isInvincible: false,
+  isNoControl: false,
+  is90Deg: false,
+  isInvisible: false,
+  state: ACTOR_WAITING,
+
+  set90Deg: function(bool) {
+    /*deg_90 = bool;
+    last_dir = dir;*/
+    this.is90Deg = bool;
+  },
+
+  setInvisible: function(bool) {
+    this.isInvisible = bool;
+  },
+
+  setNoControl: function(bool) {
+    this.isNoControl = bool;
+  },
+
+  setInvincible: function(bool) {
+    this.isInvincible = bool;
+  },
+
+  setInvert: function(bool) {
+    this.isInvert = bool;
+  },
+
+  calcSpeed: function(factor) {
+    this.speed *= factor;
+    console.log("speed now ", this.speed);
+  },
+
+  calcSize: function(factor) {
+    this.size *= factor;
+    console.log("size now ", this.size);
+  }
+};
+
 var Actor = function(obj) {
-  this.x = 0;
-  this.y = 0;
-  this.rot = 0;
+  // create shallow copy of shared actor
+  __.extend(this, ActorShared);
+
+  this.time = obj.time,
   this.id = obj.id;
-  this.size = 2;
-  this.time = obj.time;
-  this.speed = 2E-4;
-  this.rotSpeed = 4E-3;
-  this.isInvert = false;
-  this.isInvincible = false;
-  this.isNoControl = false;
-  this.is90Deg = false;
 
   this.dispatchEvent = function(obj) {
     // render the diff

@@ -84,6 +84,8 @@ App.render = function() {
     for (var it in App.actors) {
     App.actors[it].drawHead();
   }
+
+  Pickups.draw(16);
   window.requestAnimationFrame(App.render);
   //setTimeout(App.render, 50)
 };
