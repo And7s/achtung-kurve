@@ -36,6 +36,7 @@ var Server = {
   now: 0, // time the match is running
   p_id: 0,
   connections: 0,
+
   updateTime: function() {
     Server.now = getTime() - Server.time;
     return Server.now;

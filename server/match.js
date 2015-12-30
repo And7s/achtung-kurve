@@ -7,6 +7,7 @@ var Match = {
   next_pickup: 0,
 
   restart: function() {
+    App.state = GAME_SPAWNING;
     console.log('restart');
     // inform the user
     Server.restart();
@@ -34,7 +35,7 @@ var Match = {
         angle = Math.PI + angle;
       }
       angle += Math.PI; // direct angle TO the center
-      //angle += Math.random() * Math.PI / 2 - Math.PI / 4;   // max. 45^jitter
+      angle += Math.random() * Math.PI / 2 - Math.PI / 4;   // max. 45^jitter
       var user = App.actors[it];
 
       user.x = x + 0.5;
@@ -65,15 +66,59 @@ var Match = {
   },
 
   reconsider: function() {
-    console.log('reconsider');
     // TODO: add some checks
     // TODO: some notification to the clients
     // TODO: set states properly
-    App.state = GAME_OVER;
-    setTimeout(function() {
-      Match.restart();
-    }, 2000);
+    var alive = 0, total = 0, winner = 0;
+    for (var it in App.actors) {
+      total++;
+      if (App.actors[it].state == ACTOR_PLAYING || App.actors[it].state == ACTOR_SPAWNING) {
+        alive++;
+        winner = it;
+      }
+    }
+    console.log('reconsider ' + alive + '/' + total);
+    if (alive == 0 ||                 // noone still alive
+       (alive == 1 && total > 1)) {   // there is one winner
+      if (alive == 1) {
+        console.log('winner is ' + winner);
+      }
+      console.log('will restart');
+      App.state = GAME_OVER;
+      setTimeout(function() {
+        Match.restart();
+      }, 2000);
+    }
+  },
 
+  // after a user dies, there are points distributed
+  die: function(id) {
+    console.log('die '+id);
+    var alive = 0, total = 0, winner = 0;
+    for (var it in App.actors) {
+      console.log('state of '+it+' is '+App.actors[it].state)
+      total++;
+      if (App.actors[it].state == ACTOR_PLAYING || App.actors[it].state == ACTOR_SPAWNING) {
+        // this user is still alive gets 1 point
+        App.actors[it].score++;
+        alive++;
+        winner = it;
+        console.log('send a point to '+id);
+        Server.broadcast(Structure.pack({
+          id: it,
+          amount: 1
+        }, 6));
+      }
+    }
+    // the last alive user (winner) gets 5 points
+    if (alive == 1 && total > 1) {
+      console.log('winner '+winner);
+      App.actors[winner].score += 5;
+      Server.broadcast(Structure.pack({
+        id: winner,
+        amount: 5
+      }, 6));
+    }
   },
 
   update: function() {

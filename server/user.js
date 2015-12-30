@@ -36,6 +36,7 @@ function User(ws, id) {
   ws.on('close', function() {
     console.log('connection closed to '+  that.id);
     delete App.actors[that.id];
+    Match.reconsider();
   });
 
   this.update = function(dir) {
@@ -53,20 +54,21 @@ function User(ws, id) {
     if (dt <= 0) return; // avoid divide by zero
     this.time = now;
 
-
-    if (this.state == ACTOR_PLAYING) {
-      this.dispatchInput(dir, dt);
-    } else if (this.state == ACTOR_SPAWNING) {
-      this.dispatchInput(0, dt / 4);
-    } else {
-      // do nothing
+    if (App.state == GAME_SPAWNING || App.state == GAME_PLAYING) {
+      if (this.state == ACTOR_PLAYING) {
+        this.dispatchInput(dir, dt);
+      } else if (this.state == ACTOR_SPAWNING) {
+        this.dispatchInput(0, dt / 4);
+      } else {
+        // do nothing
+      }
     }
   };
 
   // let the user control
   this.dispatchInput = function(dir, dt) {
     var check_col = true;
-    if (true || this.is90Deg) {
+    if (this.is90Deg) {
       if (this.last_dir != dir && dir != 0) {
         check_col = false;  // cannot properly check for collision->disable
         this.rot += Math.PI * dir / 2;
@@ -209,7 +211,7 @@ function User(ws, id) {
     if (this.state == ACTOR_DEAD) return;
     this.state = ACTOR_DEAD;
     // communicate im dead : needed ??
-
+    Match.die(that.id);
     Match.reconsider();
   }
 };

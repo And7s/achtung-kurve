@@ -50,6 +50,9 @@ var Client = {
       case 5:  // collect pickup (effect)
         Pickups.effect(obj);
         break;
+      case 6:   // score a point
+        App.actors[obj.id].addScore(obj.amount);
+        break;
       case 7:   // diseffect (remove pickup)
         Pickups.disEffect(obj);
         break;

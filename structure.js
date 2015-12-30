@@ -45,9 +45,9 @@ var PROT = [
   },
   // 6: score a point
   {
-    size: 8,
+    size: 5,
     id: 'Uint32',
-
+    amount: 'Uint8'
   },
   // 7: diseffect (reverts 5)
   {

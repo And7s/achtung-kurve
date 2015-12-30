@@ -1,12 +1,11 @@
 var App = {
-  pixelratio : 1.5 // better rendering quality, but also more computation needed
+  pixelratio : 1.0 // better rendering quality, but also more computation needed
 };
 var Field = {};
 
 App.canvas = document.getElementById('c');
 
 App.actors = {};
-App.scores = {};
 App.stats = {
   fps: {
     cur_fps: 0,
@@ -77,6 +76,18 @@ App.render = function() {
       //console.log("down ", i);
     }
   }
+
+    // count FPS
+  App.stats.fps.cur_fps++;
+
+  var now = getTime();
+  if (now > App.stats.fps.time) {
+    App.stats.fps.time += 1000;
+    App.stats.fps.fps = App.stats.fps.cur_fps;
+    App.stats.fps.cur_fps = 0;
+  }
+
+
   Client.push();
   Particles.render(16);
   App.ctx.drawImage(Field.canvas, Field.offset_x, Field.offset_y);
@@ -85,7 +96,7 @@ App.render = function() {
   }
 
   Pickups.draw(16);
-
+  Menu.render();
    // draw the border
   App.ctx.beginPath();
   App.ctx.lineWidth = 5;
@@ -95,13 +106,13 @@ App.render = function() {
   App.ctx.closePath();
 
   window.requestAnimationFrame(App.render);
-  //setTimeout(App.render, 50)
+  //setTimeout(App.render, 10)
 };
 
 
 App.restartMatch = function() {
   Field.trans = DEBUG;
-  App.actors = {};
+  // App.actors = {}; // actors must be removed by server event to keep the state of all actors
   Pickups.arr = [];
   App.state = GAME_SPAWNING;
   App.clearField();

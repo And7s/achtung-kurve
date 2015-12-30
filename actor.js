@@ -14,6 +14,7 @@ var ActorShared = {
   isInvisible: false,
   state: ACTOR_WAITING,
   isGap: false,
+  score: 0,
 
   set90Deg: function(bool) {
     /*deg_90 = bool;
@@ -62,10 +63,10 @@ var Actor = function(obj) {
         dy = obj.y - this.y;
 
     // overflows (over bounds) take shorter dsitances
-    (dx > 0.5) && (dx -= 0.5);
-    (dx < -0.5) && (dx += 0.5);
-    (dy > 0.5) && (dy -= 0.5);
-    (dy < -0.5) && (dy += 0.5);
+    (dx > 0.5) && (dx--);
+    (dx < -0.5) && (dx++);
+    (dy > 0.5) && (dy--);
+    (dy < -0.5) && (dy++);
 
     if (this.state == ACTOR_PLAYING && obj.state == ACTOR_DEAD) {
       // add explosion
@@ -132,7 +133,7 @@ var Actor = function(obj) {
         2 * Math.PI
       );
     } else {
-      size += 2;
+      size += 4;
       App.ctx.fillRect(
         this.x * Field.size + Field.offset_x - size * App.scale / 2,
         this.y * Field.size + Field.offset_y - size * App.scale / 2,
@@ -144,4 +145,9 @@ var Actor = function(obj) {
     App.ctx.fill();
     App.ctx.closePath();
   };
+
+  this.addScore = function(amount) {
+    console.log('scored' + amount);
+    this.score += amount;
+  }
 };
