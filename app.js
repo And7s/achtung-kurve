@@ -3,8 +3,6 @@ var App = {
 };
 var Field = {};
 
-var DEBUG = true;
-
 App.canvas = document.getElementById('c');
 
 App.actors = {};
@@ -87,6 +85,15 @@ App.render = function() {
   }
 
   Pickups.draw(16);
+
+   // draw the border
+  App.ctx.beginPath();
+  App.ctx.lineWidth = 5;
+  App.ctx.strokeStyle = Field.trans ? "#0F0" : "#F00";
+  App.ctx.rect(Field.offset_x - 2.5, Field.offset_y -2.5, Field.size+5 , Field.size+5 );
+  App.ctx.stroke();
+  App.ctx.closePath();
+
   window.requestAnimationFrame(App.render);
   //setTimeout(App.render, 50)
 };

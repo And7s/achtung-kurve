@@ -57,7 +57,16 @@ var Actor = function(obj) {
 
   this.dispatchEvent = function(obj) {
     this.isGap = obj.isGap;
-    console.log(this.id + 'state ' + this.state);
+
+    var dx = obj.x - this.x,
+        dy = obj.y - this.y;
+
+    // overflows (over bounds) take shorter dsitances
+    (dx > 0.5) && (dx -= 0.5);
+    (dx < -0.5) && (dx += 0.5);
+    (dy > 0.5) && (dy -= 0.5);
+    (dy < -0.5) && (dy += 0.5);
+
     if (this.state == ACTOR_PLAYING && obj.state == ACTOR_DEAD) {
       // add explosion
       Particles.add(this.x, this.y);
@@ -73,10 +82,8 @@ var Actor = function(obj) {
     var num = Math.ceil(diff / 10);
 
     for (var i = 0; i < num; i++) {
-
-      this.rot += rot_diff / num;
-      this.x += Math.cos(this.rot) * diff * this.speed / num;
-      this.y += Math.sin(this.rot) * diff * this.speed / num;
+      this.x += dx / num;
+      this.y += dy / num;
 
       this.x = (this.x + 1) % 1;
       this.y = (this.y + 1) % 1;
@@ -94,10 +101,8 @@ var Actor = function(obj) {
     }
 
     this.rot = obj.rot;
-
     this.x = obj.x;
     this.y = obj.y;
-
   };
 
   this.drawHead = function() {

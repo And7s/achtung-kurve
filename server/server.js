@@ -1,9 +1,8 @@
 //websocket server
 var fs = require('fs');
 
-eval(fs.readFileSync('../pickup_descr.js', 'utf8'));
+eval(fs.readFileSync('../constants.js', 'utf8'));
 
-var DEBUG = true;
 var App = {
   actors: {},
   maskRes: 500,
@@ -18,7 +17,7 @@ var App = {
 };
 
 Field = {
-  trans: false
+  trans: DEBUG
 };
 
 var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});

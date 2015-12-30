@@ -13,6 +13,7 @@ var Match = {
     Pickups.arr = [];
 
     App.clearField();
+    Field.trans = DEBUG;
 
     var num_users = Object.keys(App.actors).length;
     //console.log("num user", num_users);

@@ -65,13 +65,16 @@ function User(ws, id) {
 
   // let the user control
   this.dispatchInput = function(dir, dt) {
-    if (this.is90Deg) {
-      if (this.last_dir != dir) {
-        // turn 90 deg
+    var check_col = true;
+    if (true || this.is90Deg) {
+      if (this.last_dir != dir && dir != 0) {
+        check_col = false;  // cannot properly check for collision->disable
         this.rot += Math.PI * dir / 2;
       }
       this.last_dir = dir;
       dir = 0;  // dont allow any other curves
+    } else {
+      this.last_dir = dir;  // save for pre recognition, otherwise double changes could be applied
     }
     if (this.isNoControl) {
       dir = 0;
@@ -124,17 +127,35 @@ function User(ws, id) {
       }
 
       // if a collision is spotted, that will get handled, abort moving
-      if (this.isInvincible || !collide) {
+      if (this.isInvincible || !collide || !check_col) {
         this.x += dx;
         this.y += dy;
-        this.x = (this.x + 1) % 1;
-        this.y = (this.y + 1) % 1;
-
+        // collision with border
+        if (this.x >= 1 || this.x <= 0) {
+          if (Field.trans) {
+            this.x = (this.x + 1) % 1;
+          } else {
+            this.x -= dx; // revert move
+            this.die();
+            console.log('die at '+this.x);
+            return;
+          }
+        }
+        if (this.y >= 1 || this.y <= 0) {
+          if (Field.trans) {
+            this.y = (this.y + 1) % 1;
+          } else {
+            this.y -= dy; // revert move
+            console.log('die at '+this.y);
+            this.die();
+            return;
+          }
+        }
       } else {
         break;
       }
     }
-    if (!this.isInvincible && collide) {
+    if (!this.isInvincible && collide && check_col) {
       this.die();
     }
     // collide with pickups
