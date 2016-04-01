@@ -5,6 +5,7 @@
   "private": false,
   "dependencies": {
     "gyp": "*",
-    "ws": "*"
+    "ws": "*",
+    "underscore": "*"
   }
 }

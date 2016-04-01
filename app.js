@@ -20,6 +20,7 @@ App.stats = {
 }
 
 App.init = function(images) {
+
   console.log(images);
   App.maskRes = 500;
   App.state = GAME_STOP;
@@ -34,10 +35,11 @@ App.init = function(images) {
   App.mask = new Uint8Array(App.maskRes * App.maskRes);
   window.requestAnimationFrame(App.render);
 
+  window.onresize = App.resize;
+
 };
 
 App.resize = function() {
-
   // this game takes a sqauared playfield and 1/4th menu
   var size = Math.min($(window).width() * 0.75, $(window).height());
 
@@ -55,6 +57,7 @@ App.resize = function() {
 
   App.scale = Field.size / App.maskRes;  // everything gets scaled according to this
 
+  var tmp_canvas = Field.canvas;    // if there is a current canvas, safe it
   Field.canvas = document.createElement('canvas');
   Field.canvas.width = Field.size ;  // needs to be set bot for canvas as well as ctx
   Field.canvas.height = Field.size;
@@ -65,8 +68,17 @@ App.resize = function() {
   Field.offset_x = 7,
   Field.offset_y = (size - Field.size) / 2;
 
+  if (tmp_canvas) { // keep the current drawn state (redraw the image at the new resolution)
+    console.log('there was a canvas before'+ before_scale + ' '+App.scale);
+    Field.ctx.drawImage(tmp_canvas,
+      0, 0, tmp_canvas.width, tmp_canvas.height,
+      0, 0, Field.canvas.width, Field.canvas.height
+    );
+  }
+
   Menu.resize();
 };
+
 
 
 App.render = function() {
@@ -99,9 +111,13 @@ App.render = function() {
   Menu.render();
    // draw the border
   App.ctx.beginPath();
-  App.ctx.lineWidth = 5;
+  App.ctx.lineWidth = 5 * App.scale;
   App.ctx.strokeStyle = Field.trans ? "#0F0" : "#F00";
-  App.ctx.rect(Field.offset_x - 2.5, Field.offset_y -2.5, Field.size+5 , Field.size+5 );
+  App.ctx.rect(
+    Field.offset_x - 2.5 * App.scale,
+    Field.offset_y - 2.5 * App.scale,
+    Field.size + 5 * App.scale,
+    Field.size + 5 * App.scale);
   App.ctx.stroke();
   App.ctx.closePath();
 
@@ -154,7 +170,7 @@ function text(text, x,y, size, color, ctx) {
   size = size || 16;
   color = color || '#AAA';
   ctx.fillStyle = color;
-  ctx.font = '400 '+size+"px Open Sans";
+  ctx.font = '400 ' + size * App.scale + "px Open Sans";
   ctx.textBaseline = 'bottom';
   ctx.fillText(text, x, y);
 }
