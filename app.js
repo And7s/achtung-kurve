@@ -17,7 +17,7 @@ App.stats = {
   msg_diff: 0,  // how far behind the messages were (avg)
   msg_max: 0,   // the longest clatch of messages,
   packages_recv: 0  // packages recv (better should be called msg, but already taken)
-}
+};
 
 App.init = function(images) {
 
@@ -69,7 +69,7 @@ App.resize = function() {
   Field.offset_y = (size - Field.size) / 2;
 
   if (tmp_canvas) { // keep the current drawn state (redraw the image at the new resolution)
-    console.log('there was a canvas before'+ before_scale + ' '+App.scale);
+    console.log('there was a canvas before '+App.scale);
     Field.ctx.drawImage(tmp_canvas,
       0, 0, tmp_canvas.width, tmp_canvas.height,
       0, 0, Field.canvas.width, Field.canvas.height
@@ -131,6 +131,7 @@ App.restartMatch = function() {
   // App.actors = {}; // actors must be removed by server event to keep the state of all actors
   Pickups.arr = [];
   App.state = GAME_SPAWNING;
+  App.actors = [];
   App.clearField();
 };
 

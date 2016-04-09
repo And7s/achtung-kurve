@@ -24,16 +24,15 @@ var Menu = {
     if(App.time != null) {
       var t = Math.round(App.time / 100) / 10;
       t = t.toFixed(1);
-      text(t, 0, 80, 50, '#fff', this.ctx);
-      text('FPS ' + App.stats.fps.fps, 0, 100, 20, '#fff', this.ctx);
-
+      text(t, 0, 80 * App.scale, 50, '#fff', this.ctx);
+      text('FPS ' + App.stats.fps.fps, 0, 100 * App.scale, 20, '#fff', this.ctx);
     }
 
     // draw highscore
-    var c = 2;
+    var c = 3;
     for(var it in App.actors) {
-      text(NAMES[it % NAMES.length], 0, 150 * c, 30, COLORS[it % COLORS.length], this.ctx);
-      text(App.actors[it].score, 150, 150 * c, 30, COLORS[it % COLORS.length], this.ctx);
+      text(NAMES[it % NAMES.length], 0, 50 * c * App.scale, 30, COLORS[it % COLORS.length], this.ctx);
+      text(App.actors[it].score, 150 * App.scale, 50 * c * App.scale, 30, COLORS[it % COLORS.length], this.ctx);
       c++;
     }
 

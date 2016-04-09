@@ -6,27 +6,42 @@ function User(ws, id) {
   this.id = id;
   this.time = getTime();
   this.last_message = getTime();
+  this.last_recv = getTime();
   this.next_gap = getTime();
   this.last_dir = 0;
 
   var that = this;
-  console.log('new user conencted');
 
-  for (var i = 0; i < Hist.length; i++) {
-    console.log('send hist'+i);
-    ws.send(Hist[i]);
-  }
+  this.init = function() {
+    console.log('new user conencted');
+    console.log('send hist' + Hist.length);
+    for (var i = 0; i < Hist.length; i++) {
+      this.send(Hist[i]);
+    }
 
-  var welcome = Structure.pack({
-    id: this.id,
-    state: this.state,
-    p_id: Server.p_id++,
-    time: Server.updateTime()
-  }, 0);
-  Server.broadcast(welcome);
-  ws.send(welcome);  // because the obj is not yet part of all user
+    var welcome = Structure.pack({
+      id: this.id,
+      state: this.state,
+      p_id: Server.p_id++,
+      time: Server.updateTime()
+    }, 0);
+    Server.broadcast(welcome);
+    this.send(welcome);  // because the obj is not yet part of all user
+
+    // send the new connected user the current score
+
+    for (var it in App.actors) {
+      console.log('player ' + it + 'has score' + App.actors[it].score);
+      this.send(Structure.pack({
+        id: it,
+        amount: App.actors[it].score
+      }, 6));
+    }
+  };
 
   ws.on('message', function(message, flags) {
+    that.last_recv = getTime();
+    //console.log('recv from'+that.id);
     var obj = Structure.parse(message);
     // console.log('recv', obj);
     that.update(obj.dir);
@@ -179,6 +194,27 @@ function User(ws, id) {
     }
   };
 
+  this.backgroundUpdate = function() {
+    var now = getTime();
+    if (this.last_recv < now - 200) {
+      console.log('player'+this.id +'might dcd'+(now-this.last_recv));
+/*
+
+      var dt = now - this.time;
+      this.time = now;
+      this.dispatchInput(0, dt);
+      Server.broadcast(Structure.pack({
+        dir: 0
+      }, 2)); // emulate no key pressed*/
+    }
+    if (this.last_recv < now - 2000) {
+      ws.close();
+
+      console.log('player'+this.id +'is dcd, kill');
+
+    }
+  };
+
   this.broadcast = function() {
     Server.broadcast(Structure.pack({
       x: that.x,
@@ -188,7 +224,8 @@ function User(ws, id) {
       state: that.state,
       p_id: Server.p_id++,
       time: Server.updateTime(),
-      isGap: that.isGap
+      isGap: that.isGap,
+      score: that.score
     }, 1));
   };
 
@@ -213,5 +250,7 @@ function User(ws, id) {
     // communicate im dead : needed ??
     Match.die(that.id);
     Match.reconsider();
-  }
+  };
+
+  this.init();
 };

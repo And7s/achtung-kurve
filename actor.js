@@ -58,6 +58,7 @@ var Actor = function(obj) {
 
   this.dispatchEvent = function(obj) {
     this.isGap = obj.isGap;
+    this.score = obj.score;
 
     var dx = obj.x - this.x,
         dy = obj.y - this.y;

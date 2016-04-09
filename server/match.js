@@ -128,12 +128,18 @@ var Match = {
     if (Match.next_pickup <= Server.now && App.state == GAME_PLAYING) {
       Match.addPickup();
     }
+
+
+    // maybe update those palyes that dc'd or didnt send enough packages
+    for (var it in App.actors) {
+      App.actors[it].backgroundUpdate();
+    }
   },
 
   addPickup: function() {
 
     // determine which pickup i should choose
-    console.log("new pickup");
+    // console.log("new pickup");
 
     var pickup_sum = 0;
     for (var i = 0; i < PICKUP.length; i++) {
@@ -141,7 +147,7 @@ var Match = {
         pickup_sum += PICKUP[i].prop[j];
       }
     }
-    console.log('probability of all pickups is ', pickup_sum);
+    // console.log('probability of all pickups is ', pickup_sum);
 
     var rand = Math.random() * pickup_sum;
 

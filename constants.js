@@ -1,4 +1,4 @@
-var DEBUG = false;
+var DEBUG = true;
 
 // this file describes which pickups exist and how often they spawn,
 // the effect itself is determined by pickup.js

@@ -10,14 +10,14 @@ var Touch = function() {
   }, false);
 
   document.body.addEventListener('touchend', function(e){
-      handleEnd(e);
+    handleEnd(e);
   }, false);
 
   document.body.addEventListener('touchleave', function(e){
-      handleEnd(e);
+    handleEnd(e);
   }, false);
   document.body.addEventListener('touchcancel', function(e){
-      handleEnd(e);
+    handleEnd(e);
   }, false);
 
 
@@ -34,5 +34,4 @@ var Touch = function() {
     Key.reset(39);
     Key.reset(37);
   };
-
 };
