@@ -29,7 +29,7 @@ eval(fs.readFileSync(__dirname + '/../actor.js', 'utf8'));
 var WebSocketServer = require('ws').Server;
 var __ = require('underscore');
 
-var PORT = process.argv[2] || 8080;
+var PORT = process.env.PORT || 8080;
 console.log('PORT ' + PORT);
 var Server = {
   wss: new WebSocketServer({port: PORT}),
