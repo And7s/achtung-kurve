@@ -142,7 +142,7 @@ App.clearField = function() {
   for(var i = 0; i < L; i++) {
     App.mask[i] = 0;
   }
-}
+};
 
 
 var COLORS = [

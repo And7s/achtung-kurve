@@ -12,7 +12,7 @@ var ActorShared = {
   isNoControl: false,
   is90Deg: false,
   isInvisible: false,
-  state: ACTOR_WAITING,
+  state: ACTOR_WATCHING,
   isGap: false,
   score: 0,
 

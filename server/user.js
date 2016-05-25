@@ -43,9 +43,23 @@ function User(ws, id) {
     that.last_recv = getTime();
     //console.log('recv from'+that.id);
     var obj = Structure.parse(message);
-    // console.log('recv', obj);
-    that.update(obj.dir);
-    that.broadcast();
+
+    if (obj.type == 8) {
+      console.log(obj);
+      if (obj.active) {
+        that.state = ACTOR_DEAD;
+      } else {  // if you drop out, you kill yourselv, distribute points, then go away
+        that.state = ACTOR_DEAD;
+        Match.die(that.id);
+        that.state = ACTOR_WATCHING;
+      }
+      Match.reconsider();
+    } else {
+      // console.log('recv', obj);
+      that.update(obj.dir);
+      that.broadcast();
+    }
+
   });
 
   ws.on('close', function() {
@@ -208,9 +222,10 @@ function User(ws, id) {
       }, 2)); // emulate no key pressed*/
     }
     if (this.last_recv < now - 2000) {
-      ws.close();
+      //ws.close();
 
       console.log('player'+this.id +'is dcd, kill');
+      this.state = ACTOR_WATCHING;
 
     }
   };

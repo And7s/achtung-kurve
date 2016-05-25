@@ -33,11 +33,24 @@ var Menu = {
     for(var it in App.actors) {
       text(NAMES[it % NAMES.length], 0, 50 * c * App.scale, 30, COLORS[it % COLORS.length], this.ctx);
       text(App.actors[it].score, 150 * App.scale, 50 * c * App.scale, 30, COLORS[it % COLORS.length], this.ctx);
+      text(this.getStateDescr(App.actors[it].state) +" " + App.actors[it].state, 0, (10 + 50 * c) * App.scale, 10, '#fff', this.ctx);
       c++;
     }
 
     if(App.state == 0 && App.last_win >= 0) {
       text(NAMES[App.last_win % NAMES.length] + " wins!", 0, 0, 40, '#FFF', this.ctx);
+    }
+  },
+
+  getStateDescr: function(state) {
+    switch(state) {
+      case ACTOR_DEAD: return 'dead';
+      case ACTOR_PLAYING: return 'playing';
+      case ACTOR_SPAWNING: return 'spawning';
+      case ACTOR_WATCHING: return 'spectating';
+      case ACTOR_WAITING: return 'waiting';
+      default: return 'unknown';
+
     }
   }
 };

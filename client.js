@@ -77,6 +77,16 @@ var Client = {
 
   },
 
+  setActive: function(active) {
+    if(ws.readyState !== 1) {
+      //console.log('cant send, no connection');
+      return;
+    }
+    ws.send(Structure.pack({
+      active: active
+    }, 8));
+  },
+
   getId: function() {
     return this.id;
   }

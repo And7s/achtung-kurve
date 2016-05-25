@@ -55,7 +55,13 @@ var PROT = [
     size: 8,
     id: 'Uint32',
     u_id: 'Uint32'
+  },
+  // 8: join, dc
+  {
+    size: 1,
+    active: 'Uint8'
   }
+
 
 ];
 

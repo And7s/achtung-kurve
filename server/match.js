@@ -21,33 +21,37 @@ var Match = {
     var count = Math.random() * num_users;  // rotation where to start
 
     for (var it in App.actors) {
-      //var x = Math.random() - 0.5;
-      //var y = Math.random() - 0.5;
-      var x = Math.sin(2 * Math.PI / num_users * count) * 0.5;
-      var y = Math.cos(2 * Math.PI / num_users * count) * 0.5;
-      x *= Math.random() * 0.9;
-      y *= Math.random() * 0.9;
-
-      count++;
-
-      var angle = Math.atan(y / x);
-      if (x < 0 ) {
-        angle = Math.PI + angle;
-      }
-      angle += Math.PI; // direct angle TO the center
-      angle += Math.random() * Math.PI / 2 - Math.PI / 4;   // max. 45^jitter
+      // restart this user
       var user = App.actors[it];
+      if (user.state != ACTOR_WATCHING) {
+        var x = Math.sin(2 * Math.PI / num_users * count) * 0.5;
+        var y = Math.cos(2 * Math.PI / num_users * count) * 0.5;
+        x *= Math.random() * 0.9;
+        y *= Math.random() * 0.9;
 
-      user.x = x + 0.5;
-      user.y = y + 0.5;
-      user.rot = angle;
-      user.isInvert = false;
-      user.isInvincible = false;
-      user.isNoControl = false;
-      user.is90Deg = false;
-      user.isInvisible = false;
-      user.speed = 2E-4;
-      user.state = ACTOR_SPAWNING;
+        count++;
+
+        var angle = Math.atan(y / x);
+        if (x < 0 ) {
+          angle = Math.PI + angle;
+        }
+        angle += Math.PI; // direct angle TO the center
+        angle += Math.random() * Math.PI / 2 - Math.PI / 4;   // max. 45^jitter
+
+
+        user.x = x + 0.5;
+        user.y = y + 0.5;
+        user.rot = angle;
+        user.isInvert = false;
+        user.isInvincible = false;
+        user.isNoControl = false;
+        user.is90Deg = false;
+        user.isInvisible = false;
+        user.speed = 2E-4;
+
+        user.state = ACTOR_SPAWNING;
+      }
+
 
       user.broadcast();
     }
@@ -61,7 +65,9 @@ var Match = {
     App.state = GAME_PLAYING;
     Match.next_pickup = Server.now + Math.random() * 2000; //2000 + Math.random() * 4000;
     for (var it in App.actors) {
-      App.actors[it].state = ACTOR_PLAYING;
+      if (App.actors[it].state != ACTOR_WATCHING) {
+        App.actors[it].state = ACTOR_PLAYING;
+      }
     }
   },
 
@@ -71,7 +77,9 @@ var Match = {
     // TODO: set states properly
     var alive = 0, total = 0, winner = 0;
     for (var it in App.actors) {
-      total++;
+      if (App.actors[it].state != ACTOR_WATCHING) {
+        total++;
+      }
       if (App.actors[it].state == ACTOR_PLAYING || App.actors[it].state == ACTOR_SPAWNING) {
         alive++;
         winner = it;
@@ -97,7 +105,9 @@ var Match = {
     var alive = 0, total = 0, winner = 0;
     for (var it in App.actors) {
       console.log('state of '+it+' is '+App.actors[it].state)
-      total++;
+      if (App.actors[it].state != ACTOR_WATCHING) {
+        total++;
+      }
       if (App.actors[it].state == ACTOR_PLAYING || App.actors[it].state == ACTOR_SPAWNING) {
         // this user is still alive gets 1 point
         App.actors[it].score++;
