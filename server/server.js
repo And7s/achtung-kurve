@@ -20,7 +20,7 @@ Field = {
   trans: DEBUG
 };
 
-var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
+//var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
 eval(fs.readFileSync(__dirname + '/../structure.js', 'utf8'));
 eval(fs.readFileSync(__dirname + '/match.js', 'utf8'));
 eval(fs.readFileSync(__dirname + '/user.js', 'utf8'));
@@ -30,9 +30,21 @@ var WebSocketServer = require('ws').Server;
 var __ = require('underscore');
 
 var PORT = process.env.PORT || 8080;
+
+var express = require("express");
+var http = require("http");
+var app = express();
+   app.use(express.static(__dirname + "/"));
+
+var server2 = http.createServer(app);
+server2.listen(PORT);
+    /*
+console.log("http server listening on %d", PORT);
+
+*/
 console.log('PORT ' + PORT);
 var Server = {
-  wss: new WebSocketServer({port: PORT}),
+  wss: new WebSocketServer({server: server2}),
   time: getTime(), // reference time, when server did start
   now: 0, // time the match is running
   p_id: 0,

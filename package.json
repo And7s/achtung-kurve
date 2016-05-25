@@ -1,11 +1,12 @@
 {
   "name": "achtung-kurve",
   "description": "Achtung Kurve Game",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": false,
   "dependencies": {
     "gyp": "*",
     "ws": "*",
-    "underscore": "*"
+    "underscore": "*",
+    "express": "^4.4.5"
   }
 }
