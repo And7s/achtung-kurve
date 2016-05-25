@@ -109,7 +109,7 @@ var Actor = function(obj) {
 
   this.drawHead = function() {
     // which color should you be drawn
-    if (this.state == ACTOR_DEAD) {
+    if (this.state == ACTOR_DEAD || this.state == ACTOR_WATCHING) {
       // dont draw heads of dead player
       return;
     }
@@ -123,6 +123,28 @@ var Actor = function(obj) {
     App.ctx.fillStyle = color;
     if (App.time <= 2000) { // spawning
       size = Ease.spawningSelf(App.time, 3, 9, 2000);
+
+      if (obj.id == Client.getId()) {
+        // draw a ripple around the spawing palyer
+        sizerip = Ease.spawningSelf(App.time, 0, 20, 2000);
+
+        App.ctx.lineWidth = 1 * App.scale;
+        App.ctx.strokeStyle = '#fff';
+
+        for (var factor = 1; factor <= 2; factor++) {
+          App.ctx.beginPath();
+          App.ctx.arc(
+            this.x * Field.size + Field.offset_x,
+            this.y * Field.size + Field.offset_y,
+            sizerip / factor * App.scale,
+            0,
+            2 * Math.PI
+          );
+          App.ctx.stroke();
+        }
+      }
+      text(NAMES[this.id % NAMES.length], (this.x + 0.01) * Field.size + Field.offset_x, this.y * Field.size + Field.offset_y, 10, '#fff', this.ctx);
+
     }
     App.ctx.beginPath();
     if (!this.is90Deg) {

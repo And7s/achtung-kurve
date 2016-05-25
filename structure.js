@@ -2,11 +2,12 @@
 
 //the defined protocol
 var PROT = [
-  // 0: who am I
+  // 0: new user conencted
   {
-   size: 5,
-   id: 'Uint32',
-   state: 'Uint8',
+    size: 6,
+    id: 'Uint32',
+    state: 'Uint8',
+    isYou: 'Uint8'
   },
   // 1: update position
   {

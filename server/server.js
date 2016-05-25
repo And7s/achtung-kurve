@@ -52,8 +52,7 @@ var Server = {
   restart: function() {
     Hist = [];
     this.time = getTime();
-    this.updateTime();
-    this.broadcast(Structure.pack({}, 3));
+    this.broadcast(Structure.pack({time: this.updateTime()}, 3));
   }
 };
 

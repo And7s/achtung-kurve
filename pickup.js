@@ -66,8 +66,29 @@ var Pickups = {
         scale
       );
 
-      if(obj.state == 2) {
-         App.ctx.globalAlpha = 1;
+
+     // draw ripples around fading pick ups
+      if (obj.state == 2) {
+        App.ctx.globalAlpha = Math.min(1, App.ctx.globalAlpha * 2); // ripples fade out slower
+        App.ctx.lineWidth = 1 * App.scale;
+        App.ctx.strokeStyle = ['#00FF00', '#FF0000', '#0000FF'][obj.apply];
+
+        App.ctx.beginPath();
+        App.ctx.arc(
+          this.arr[i].x * Field.size + Field.offset_x,
+          this.arr[i].y * Field.size + Field.offset_y,
+          scale*scale/1.8 / (this.real_size * App.scale * this.size), 0, 2 * Math.PI
+        );
+        App.ctx.stroke();
+
+        App.ctx.beginPath();
+        App.ctx.arc(
+          this.arr[i].x * Field.size + Field.offset_x,
+          this.arr[i].y * Field.size + Field.offset_y,
+          scale*scale/2 / (this.real_size * App.scale * this.size), 0, 2 * Math.PI
+        );
+        App.ctx.stroke();
+        App.ctx.globalAlpha = 1;
       }
     }
   },

@@ -126,7 +126,8 @@ var Match = {
       App.actors[winner].score += 5;
       Server.broadcast(Structure.pack({
         id: winner,
-        amount: 5
+        amount: 5,
+        time: Server.updateTime()
       }, 6));
     }
   },
@@ -177,7 +178,8 @@ var Match = {
       y: Math.random(),
       num: pick_item.num,
       apply: pick_item.apply,
-      id: Pickups.getNextId()
+      id: Pickups.getNextId(),
+      time: Server.updateTime()
     };
 
     Pickups.add(obj);

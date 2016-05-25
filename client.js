@@ -4,7 +4,7 @@ var HOST = (location.host == 'and7s.github.io') ? '212.227.97.146' : 'localhost'
 var PORT = 8080;
 
 var Client = {
-
+  id: null,
   initialize: function() {
     ws = new WebSocket('ws://' + HOST + ':' + PORT + '/');
 
@@ -29,11 +29,20 @@ var Client = {
 
   processMessage: function(obj) {
     // console.log(obj);
-    App.time = obj.time;
+    if (obj.time < App.time) {
+      console.log('smaller time ', obj);
+    }
+    if (obj.type != 4) {  // pick
+      App.time = obj.time;
+    }
+
     switch(obj.type) {
       case 0:   // welcome new user
-        console.log('new actor');
+        console.log('new actor'+obj.id);
         App.actors[obj.id] = new Actor(obj);
+        if (obj.isYou) {
+          Client.id = obj.id;
+        }
       break;
       case 1:   // update position
         if (!App.actors[obj.id]) {

@@ -19,14 +19,17 @@ function User(ws, id) {
       this.send(Hist[i]);
     }
 
-    var welcome = Structure.pack({
+
+    var welcome = {
       id: this.id,
       state: this.state,
       p_id: Server.p_id++,
-      time: Server.updateTime()
-    }, 0);
-    Server.broadcast(welcome);
-    this.send(welcome);  // because the obj is not yet part of all user
+      time: Server.updateTime(),
+      isYou: 0
+    };
+    Server.broadcast(Structure.pack(welcome, 0));
+    welcome.isYou = 1;
+    this.send(Structure.pack(welcome, 0));  // because the obj is not yet part of all user
 
     // send the new connected user the current score
 
@@ -196,11 +199,13 @@ function User(ws, id) {
       console.log('pickup ', obj);
       // apply effect, remove pickup
       obj.u_id = that.id;
+      obj.time = Server.updateTime();
       Server.broadcast(Structure.pack(obj, 5));
       Pickups.effect(obj);
 
       // disefect
       setTimeout(function(obj) {
+        obj.time = Server.updateTime();
         console.log('disefect');
         Pickups.disEffect(obj);
         Server.broadcast(Structure.pack(obj, 7));
