@@ -1,7 +1,7 @@
 //websocket server
 var fs = require('fs');
 
-eval(fs.readFileSync('../constants.js', 'utf8'));
+eval(fs.readFileSync(__dirname + '/../constants.js', 'utf8'));
 
 var App = {
   actors: {},
@@ -21,17 +21,18 @@ Field = {
 };
 
 var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'w'});
-eval(fs.readFileSync('../structure.js', 'utf8'));
-eval(fs.readFileSync('match.js', 'utf8'));
-eval(fs.readFileSync('user.js', 'utf8'));
-eval(fs.readFileSync('../pickup.js', 'utf8'));
-eval(fs.readFileSync('../actor.js', 'utf8'));
+eval(fs.readFileSync(__dirname + '/../structure.js', 'utf8'));
+eval(fs.readFileSync(__dirname + '/match.js', 'utf8'));
+eval(fs.readFileSync(__dirname + '/user.js', 'utf8'));
+eval(fs.readFileSync(__dirname + '/../pickup.js', 'utf8'));
+eval(fs.readFileSync(__dirname + '/../actor.js', 'utf8'));
 var WebSocketServer = require('ws').Server;
 var __ = require('underscore');
 
-
+var PORT = process.argv[2] || 8080;
+console.log('PORT ' + PORT);
 var Server = {
-  wss: new WebSocketServer({port: 8080}),
+  wss: new WebSocketServer({port: PORT}),
   time: getTime(), // reference time, when server did start
   now: 0, // time the match is running
   p_id: 0,

@@ -15,9 +15,11 @@ function User(ws, id) {
   this.init = function() {
     console.log('new user conencted');
     console.log('send hist' + Hist.length);
-    for (var i = 0; i < Hist.length; i++) {
+    console.time('fetchUp');
+    /*for (var i = 0; i < Hist.length; i++) {
       this.send(Hist[i]);
-    }
+    }*/
+    console.timeEnd('fetchUp');
 
 
     var welcome = {
