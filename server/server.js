@@ -30,21 +30,21 @@ var WebSocketServer = require('ws').Server;
 var __ = require('underscore');
 
 var PORT = process.env.PORT || 8080;
-
+/*
 var express = require("express");
 var http = require("http");
 var app = express();
    app.use(express.static(__dirname + "/"));
 
 var server2 = http.createServer(app);
-server2.listen(PORT);
+server2.listen(PORT);*/
     /*
 console.log("http server listening on %d", PORT);
 
 */
 console.log('PORT ' + PORT);
 var Server = {
-  wss: new WebSocketServer({server: server2}),
+  wss: new WebSocketServer({port: PORT}),
   time: getTime(), // reference time, when server did start
   now: 0, // time the match is running
   p_id: 0,

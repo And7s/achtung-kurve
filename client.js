@@ -1,15 +1,13 @@
 var ws;
-var HOST = (location.host == 'and7s.github.io') ? '212.227.97.146' : 'localhost';
-
-var PORT = 8080;
+var HOST = (location.host == 'and7s.github.io') ? 'achtung-kurve.herokuapp.com/' : 'localhost:8080';
 
 var Client = {
   id: null,
   initialize: function() {
-    ws = new WebSocket('ws://' + HOST + ':' + PORT + '/');
+    ws = new WebSocket('ws://' + HOST);
 
     ws.binaryType = 'arraybuffer';
-    console.log('connecting to server ' + HOST + ':' + PORT);
+    console.log('connecting to server ' + HOST);
 
     ws.onopen = function(e) {
       console.log('successfully connected');
