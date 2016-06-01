@@ -15,6 +15,7 @@
     font-family: 'Open Sans', 'Arial', sans-serif;
     color: white;
     font-weight:300;
+    overflow: hidden;
 
   }
   canvas {
@@ -36,8 +37,12 @@
     left: 0;
     width: 100%;
     height: 100%;
+    transition: all 0.3s ease;
   }
-
+  #menu.active {
+    transform: scale(2);
+    opacity: 0;
+  }
   h1 {
     font-weight: 300;
     text-align: center;
@@ -94,10 +99,12 @@
     document.getElementById('join').addEventListener('click', function() {
 
       Client.setActive(1);
+      $('#menu').addClass('active');
     });
     document.getElementById('pause').addEventListener('click', function() {
 
       Client.setActive(0);
+
     });
 
   </script>
